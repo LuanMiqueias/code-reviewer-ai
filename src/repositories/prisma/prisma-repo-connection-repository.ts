@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
-import { Prisma } from "@prisma/client";
-import { RepoConnectionRepository } from "../repo-connection.repository copy";
+import { Prisma, ProviderType } from "@prisma/client";
+import { RepoConnectionRepository } from "../repo-connection.repository";
 
 export class PrismaRepoConnectionRepository
 	implements RepoConnectionRepository

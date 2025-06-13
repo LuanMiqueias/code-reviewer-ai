@@ -3,14 +3,13 @@ import { FastifyInstance } from "fastify";
 // Controllers
 import { createUser } from "./create.controller";
 import { authenticate } from "./authenticate.controller";
-import { authenticateGithub } from "./github/authenticate-github.controller";
-import { authenticateGithubCallback } from "./github/github-callback.controller";
-import { getGithubUser } from "./github/github-user.controller";
+import { githubCallback } from "./oAuth/github/github-callback.controller";
+import { authenticateGithub } from "./oAuth/github/github-auth.controller";
 
 export const userRoutes = async (app: FastifyInstance) => {
 	app.post("/auth/register", createUser);
 	app.post("/auth/login", authenticate);
 	app.post("/auth/github", authenticateGithub);
-	app.get("/auth/github", getGithubUser);
-	app.get("/auth/github/callback", authenticateGithubCallback);
+	app.post("/auth/github/callback", githubCallback);
+	// app.get("/auth/github", getGithubUser);
 };

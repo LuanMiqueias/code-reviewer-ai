@@ -35,6 +35,11 @@ export class CreateUserUseCase {
 			passwordHash,
 		});
 
+		const aiService = new AIService("gemini");
+		const aiResponse = await aiService.chatCompletion({
+			user,
+		});
+
 		return {
 			user: {
 				...user,

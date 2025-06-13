@@ -1,4 +1,4 @@
-import { Prisma, RepoConnection } from "@prisma/client";
+import { Prisma, ProviderType, RepoConnection, User } from "@prisma/client";
 
 export interface RepoConnectionRepository {
 	create(data: Prisma.RepoConnectionCreateInput): Promise<RepoConnection>;
