@@ -31,9 +31,19 @@ export const githubCallback = async (
 			accountRepository
 		);
 
-		const { user, accessToken } = await authenticateUseCase.execute({ code });
+		const { user, providerUserId } = await authenticateUseCase.execute({
+			code,
+		});
 
-		return res.status(200).send({ user, accessToken });
+		const token = await res.jwtSign({
+			sign: {
+				sub: user.id,
+				providerUserId: providerUserId,
+				provider: ProviderType.GITHUB,
+			},
+		});
+
+		return res.status(200).send({ user, token });
 	} catch (err) {
 		if (err instanceof InvalidCreditialError) {
 			return res.status(404).send({ message: err.message });

@@ -5,12 +5,12 @@ import { RepoProviderInterface } from "./repo-client.interface";
 export class RepoClientService {
 	private provider: RepoProviderInterface;
 
-	constructor(provider: ProviderType, token: string) {
-		this.provider = new GithubProvider(token);
+	constructor(provider: ProviderType) {
+		this.provider = new GithubProvider();
 	}
 
-	async getRepos() {
-		return this.provider.getRepos();
+	async getRepos(token: string, page: number = 1, perPage: number = 30) {
+		return this.provider.getRepos(token, page, perPage);
 	}
 
 	async fetchUser(token: string) {

@@ -28,4 +28,12 @@ export class PrismaAccountRepository implements AccountRepository {
 
 		return account;
 	}
+	async updateProviderAccessToken(id: string, newAccessToken: string) {
+		const account = await prisma.account.update({
+			where: { id },
+			data: { accessToken: newAccessToken },
+		});
+
+		return account;
+	}
 }

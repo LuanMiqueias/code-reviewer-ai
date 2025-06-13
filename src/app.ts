@@ -11,6 +11,7 @@ import { env } from "./env";
 // Routes
 import { userRoutes } from "./http/controllers/user/routes";
 import { formatZodError } from "./utils/format-zod-error";
+import { projectRoutes } from "./http/controllers/project/routes";
 
 export const app = fastify();
 
@@ -26,6 +27,7 @@ app.register(fastifyJwt, {
 });
 
 app.register(userRoutes);
+app.register(projectRoutes);
 
 app.setErrorHandler((error, req, res) => {
 	if (error instanceof ZodError) {

@@ -6,4 +6,8 @@ export interface AccountRepository {
 		provider: ProviderType,
 		providerUserId: string
 	): Promise<(Account & { user: User }) | null>;
+	updateProviderAccessToken(
+		id: string,
+		newAccessToken: string
+	): Promise<Account>;
 }

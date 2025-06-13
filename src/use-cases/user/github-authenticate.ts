@@ -10,7 +10,7 @@ interface AuthenticateUseCaseRequest {
 
 interface AuthenticateUseCaseResponse {
 	user: User;
-	accessToken: string;
+	providerUserId: string;
 }
 
 export class AuthenticateUseCase {
@@ -23,10 +23,11 @@ export class AuthenticateUseCase {
 	async execute({
 		code,
 	}: AuthenticateUseCaseRequest): Promise<AuthenticateUseCaseResponse> {
-		const { accessToken } = await this.repoClientService.exchangeCodeForToken(
-			code
+		const { accessToken: accessTokenGitHub } =
+			await this.repoClientService.exchangeCodeForToken(code);
+		const repoClientUser = await this.repoClientService.fetchUser(
+			accessTokenGitHub
 		);
-		const repoClientUser = await this.repoClientService.fetchUser(accessToken);
 
 		if (
 			!repoClientUser?.id ||
@@ -43,9 +44,13 @@ export class AuthenticateUseCase {
 			);
 
 		if (account) {
+			await this.accountRepository.updateProviderAccessToken(
+				account.id,
+				accessTokenGitHub
+			);
 			return {
 				user: account.user,
-				accessToken,
+				providerUserId: account.providerUserId,
 			};
 		}
 
@@ -57,11 +62,11 @@ export class AuthenticateUseCase {
 				create: {
 					provider: ProviderType.GITHUB,
 					providerUserId: repoClientUser.id.toString(),
-					accessToken,
+					accessToken: accessTokenGitHub,
 				},
 			},
 		});
 
-		return { user, accessToken };
+		return { user, providerUserId: repoClientUser.id.toString() };
 	}
 }
