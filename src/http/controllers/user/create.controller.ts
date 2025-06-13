@@ -1,9 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { UserAlreadyExistsError } from "../../../use-cases/errors/user.already-exists-error";
+
+// Repositories
 import { PrismaUserRepository } from "../../../repositories/prisma/prisma-user-repository";
+
+// Use Cases
 import { CreateUserUseCase } from "../../../use-cases/user/register";
-import { PrismaWalletRepository } from "../../../repositories/prisma/wallet-user-repository";
+import { UserAlreadyExistsError } from "../../../use-cases/errors/user.already-exists-error";
 
 export const createUser = async (req: FastifyRequest, res: FastifyReply) => {
 	const createUserBodySchema = z.object({
@@ -13,8 +16,7 @@ export const createUser = async (req: FastifyRequest, res: FastifyReply) => {
 	});
 
 	const repository = new PrismaUserRepository();
-	const walletRepository = new PrismaWalletRepository();
-	const createUserUseCase = new CreateUserUseCase(repository, walletRepository);
+	const createUserUseCase = new CreateUserUseCase(repository);
 
 	const { name, email, password } = createUserBodySchema.parse(req.body);
 
@@ -28,8 +30,9 @@ export const createUser = async (req: FastifyRequest, res: FastifyReply) => {
 	} catch (err) {
 		if (err instanceof UserAlreadyExistsError) {
 			return res.status(409).send({ message: err.message });
-		} else {
-			return res.status(500).send(); //TODO: fix later
 		}
+		return res.status(500).send({
+			message: "Internal server error",
+		});
 	}
 };

@@ -17,7 +17,7 @@ export class OpenAIProvider implements AIProvider {
 
 		return JSON.parse(res.choices[0].message.content ?? "{}");
 	}
-	chat(messages: string): Promise<string> {
+	analyzeCodeChunk(data: any): Promise<string> {
 		throw new Error("Method not implemented.");
 	}
 }

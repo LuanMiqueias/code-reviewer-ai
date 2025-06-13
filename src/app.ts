@@ -10,6 +10,7 @@ import { env } from "./env";
 
 // Routes
 import { userRoutes } from "./http/controllers/user/routes";
+import { formatZodError } from "./utils/format-zod-error";
 
 export const app = fastify();
 
@@ -28,9 +29,10 @@ app.register(userRoutes);
 
 app.setErrorHandler((error, req, res) => {
 	if (error instanceof ZodError) {
+		const formattedErrors = formatZodError(error);
 		return res.status(400).send({
 			message: "Validation Error",
-			issues: error.format(),
+			errors: formattedErrors,
 		});
 	}
 

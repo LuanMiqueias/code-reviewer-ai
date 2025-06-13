@@ -14,10 +14,52 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  name         String
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String           @id @default(uuid())
+  email          String           @unique
+  name           String
+  passwordHash   String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  RepoConnection RepoConnection[]
+}
+
+model RepoConnection {
+  id        String           @id @default(uuid())
+  name      String
+  url       String
+  provider  ProviderType
+  tokenHash String?
+  user      User             @relation(fields: [userId], references: [id])
+  userId    String
+  settings  ProjectSettings?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model ProjectSettings {
+  id             String         @id @default(uuid())
+  RepoConnection RepoConnection @relation(fields: [repositoryId], references: [id])
+  repositoryId   String         @unique
+
+  language     String
+  projectType  ProjectType
+  architecture ArchitectureType
+  codingStyle  String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+enum ProviderType {
+  GITHUB
+  BITBUCKET
+}
+
+enum ProjectType {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+}
+
+enum ArchitectureType {
+  DDD
 }

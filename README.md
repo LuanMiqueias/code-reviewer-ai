@@ -1,39 +1,84 @@
-![image](https://github.com/user-attachments/assets/9d313c96-0314-4131-a36c-ac8bcb9e30f4)
-.
-# TradeVision  
-TradeVision is an investment simulation and market analysis application focused on providing users with a platform to practice buying and selling stocks and viewing real-time quotes. The system is designed to offer a hands-on and educational experience about investing in the stock market, without executing real transactions.
+📋 Requisitos do Sistema: Code Reviewer AI
+🧠 Visão Geral
+O Code Reviewer AI é uma plataforma que se conecta com repositórios de código (inicialmente GitHub), analisa automaticamente o código-fonte utilizando agentes de IA (como Gemini ou OpenAI GPT) e sugere melhorias, boas práticas, refatorações e criação de issues diretamente no repositório. A arquitetura será extensível e modular, com foco em personalização por usuário.
 
-## Objective  
-To allow users to simulate buying and selling stocks, view market quotes, and analyze the performance of their simulated portfolios. The goal is to provide an educational and practical tool for both beginner and experienced investors.
+⚙️ Stack Tecnológica
+Backend: Node.js, Fastify, TypeScript
 
-## Main Features  
-- Transaction Simulation: Users can practice buying and selling stocks with fake money.  
-- Quote Visualization: Offers real-time quotes and historical price charts of stocks.  
-- Portfolio Management: Allows users to add, remove, and update stocks in a simulated portfolio, as well as view overall performance.  
-- Alerts and Notifications: Set up alerts for price changes and notifications about significant fluctuations.  
-- Analysis and Reports: Generates reports on portfolio performance and provides financial indicators based on simulated data.  
+Banco de Dados: PostgreSQL com Prisma ORM
 
-## Functional Requirements  
-- User registration and authentication.  
-- Simulation of stock purchases and sales.  
-- Visualization and management of simulated portfolios.  
-- Real-time quotes and historical charts.  
-- Price alerts and notifications.  
-- Performance reports and financial indicators.  
+IA: Gemini (Google) e GPT (OpenAI), com suporte a RAG
 
-## Non-Functional Requirements  
-- Performance: Fast response times and scalability to support many users.  
-- Security: Data protection and secure authentication.  
-- Reliability: High availability and data backup.  
-- Maintainability: Clean, documented, and tested code.  
-- Usability: Intuitive and accessible interface.  
-- Compatibility: Support for different browsers and devices.  
-- Legality: Compliance with relevant regulations.  
-- Internationalization: Support for multiple languages, if applicable.  
+Controle de Versão: GitHub (OAuth)
 
-## Additional Features  
-- Advanced Simulation Mode: Tools for technical analysis and investment strategies.  
-- Education and Tutorials: Guides and educational materials about investing.  
-- Integration with Financial Data: Historical data and simulated forecasts for analysis.  
+Revisão Automatizada: Análise de código e Pull Requests
 
-TradeVision is a powerful tool for anyone looking to better understand the financial market, practice investment strategies, and evaluate the impact of their decisions without real financial risk.
+Extração de Conhecimento (RAG): Indexação de arquivos com embeddings e busca vetorial
+
+🧑‍💻 Funcionalidades por Módulo
+
+1. 🔐 Autenticação
+   Login com OAuth do GitHub
+
+Armazenamento seguro do token de acesso
+
+Permissões mínimas necessárias: leitura/escrita em repositórios e Pull Requests
+
+2. 👤 Módulo de Usuários
+   Cadastro e gerenciamento de configurações por usuário
+
+Configuração de:
+
+Linguagens usadas
+
+Arquitetura do projeto (ex: MVC, DDD)
+
+Área de foco: frontend, backend ou ambos
+
+3. 📦 Módulo de Repositórios
+   Conexão com repositórios via GitHub API
+
+Listagem e sincronização dos repositórios do usuário
+
+Clonagem local para análise dos arquivos
+
+Extração de caminhos dos arquivos
+
+Leitura e divisão de código em chunks
+
+4. 🧠 Módulo de Análise com IA
+   Envio de chunks para análise com IA (Gemini, GPT etc.)
+
+Geração de issues com:
+
+Título
+
+Corpo explicativo com sugestões
+
+Contexto técnico
+
+Criação automática de issues no GitHub via API
+
+Geração em formato JSON para controle interno
+
+5. 🔍 Análise de Pull Requests
+   Escuta de eventos de Pull Request (via webhook ou polling)
+
+Análise somente dos arquivos modificados
+
+Sugestões inline (ou fallback para comentário agregado com contexto)
+
+Geração de review automático com botão "Aprovar" ou "Solicitar mudanças"
+
+6. 🧠 RAG - Retrieval-Augmented Generation
+   Armazenamento dos códigos em forma vetorial (embeddings)
+
+Integração com um vetor DB como:
+
+PostgreSQL + pgvector
+
+Pinecone, Weaviate ou Qdrant (futuramente)
+
+Uso de contexto dos arquivos do projeto para enriquecer os prompts
+
+Possibilidade de consultar múltiplos arquivos para análise contextual

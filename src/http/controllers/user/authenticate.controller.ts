@@ -1,8 +1,11 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { InvalidCreditialError } from "../../../use-cases/errors/invalid-credentials-error";
-import { userInfo } from "os";
+
+// Repositories
 import { PrismaUserRepository } from "../../../repositories/prisma/prisma-user-repository";
+
+// Use Cases
+import { InvalidCreditialError } from "../../../use-cases/errors/invalid-credentials-error";
 import { AuthenticateUseCase } from "../../../use-cases/user/authenticate";
 
 export const authenticate = async (req: FastifyRequest, res: FastifyReply) => {

@@ -15,4 +15,7 @@ export class AIService {
 	chatCompletion(data: any) {
 		return this.provider.chatCompletion(data);
 	}
+	analyzeCodeChunk(chunk: { filename: string; content: string }) {
+		return this.provider.analyzeCodeChunk(chunk);
+	}
 }

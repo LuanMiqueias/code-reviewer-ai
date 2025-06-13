@@ -2,6 +2,7 @@ import { User } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { UserRepository } from "../../repositories/user.repository";
 import { UserAlreadyExistsError } from "../errors/user.already-exists-error";
+import { AIService } from "@/lib/ai/ai.service";
 
 interface CreateUserUseCaseRequest {
 	name: string;
@@ -14,7 +15,9 @@ interface CreateUserUseCaseResponse {
 }
 
 export class CreateUserUseCase {
-	constructor(private userRepository: UserRepository) {}
+	constructor(
+		private userRepository: UserRepository,
+	) {}
 
 	async execute({
 		name,
@@ -32,6 +35,11 @@ export class CreateUserUseCase {
 			name,
 			email,
 			passwordHash,
+		});
+
+		const aiService = new AIService("gemini");
+		const aiResponse = await aiService.chatCompletion({
+			user,
 		});
 
 		return {
