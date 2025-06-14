@@ -6,39 +6,48 @@ import { PrismaUserRepository } from "../../../repositories/prisma/prisma-user-r
 
 // Use Cases
 import { GetAllExternalRepositoriesUseCase } from "@/use-cases/project/get-all-external-repositories";
-import { ProviderType } from "@prisma/client";
+import { ArchitectureType, ProjectType, ProviderType } from "@prisma/client";
 import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
 import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-repository";
 import { GithubError } from "@/infra/repo-provider/errors/github-error";
 import { CreateRepoConnectionUseCase } from "@/use-cases/project/create-repo-connection";
 import { PrismaRepoConnectionRepository } from "@/repositories/prisma/prisma-repo-connection-repository";
+import { CreateSettingsUseCase } from "@/use-cases/project/create-repo-settings";
+import { PrismaProjectSettingsRepository } from "@/repositories/prisma/prisma-project-settings-repository";
 
-export const createRepoConnection = async (
+export const createRepoSettings = async (
 	req: FastifyRequest,
 	res: FastifyReply
 ) => {
-	const CreateRepoConnectionQuerySchema = z.object({
+	const CreateRepoConnectionParamsSchema = z.object({
 		repoName: z.string(),
 	});
+	const CreateRepoSettingsQuerySchema = z.object({
+		projectType: z.nativeEnum(ProjectType),
+		architectureType: z.nativeEnum(ArchitectureType),
+		language: z.string(),
+		codingStyle: z.string(),
+	});
 
-	const { repoName } = CreateRepoConnectionQuerySchema.parse(req.params);
+	const { repoName } = CreateRepoConnectionParamsSchema.parse(req.params);
+	const settings = CreateRepoSettingsQuerySchema.parse(req.body);
 
 	const { provider, providerUserId } = req.user.sign;
 
 	const repoConnectionRepository = new PrismaRepoConnectionRepository();
 	const accountRepository = new PrismaAccountRepository();
-	const repoClientService = new RepoClientService(provider);
-
-	const createRepoConnectionUseCase = new CreateRepoConnectionUseCase(
+	const projectSettingsRepository = new PrismaProjectSettingsRepository();
+	const createRepoSettingsUseCase = new CreateSettingsUseCase(
+		projectSettingsRepository,
 		repoConnectionRepository,
-		accountRepository,
-		repoClientService
+		accountRepository
 	);
 
-	const data = await createRepoConnectionUseCase.execute({
+	const data = await createRepoSettingsUseCase.execute({
 		providerUserId,
 		provider,
 		repoName,
+		settings,
 	});
 
 	return res.status(200).send(data);

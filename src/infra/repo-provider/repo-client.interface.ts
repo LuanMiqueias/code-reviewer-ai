@@ -15,4 +15,10 @@ export interface RepoProviderInterface {
 		providerUserName: string;
 		token: string;
 	}): Promise<GithubRepoDTO>;
+	cloneRepo(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		repoBranch: string;
+	}): Promise<void>;
 }

@@ -1,4 +1,3 @@
-import { InvalidCreditialError } from "../errors/invalid-credentials-error";
 import { UserRepository } from "../../repositories/user.repository";
 import { ProviderType, RepoConnection, User } from "@prisma/client";
 import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
@@ -10,8 +9,11 @@ import {
 import { mapGithubRepoToRepoListItem } from "@/adapters/github/repo-list-item";
 import { RepoConnectionRepository } from "@/repositories/repo-connection.repository";
 import { RepoProviderInterface } from "@/infra/repo-provider/repo-client.interface";
-import { ResourceNotFoundError } from "../errors/resource-not-found-error";
-import { ResourceAlreadyExistsError } from "../errors/resource.already-exists-error";
+import {
+	InvalidCreditialError,
+	ResourceAlreadyExistsError,
+	ResourceNotFoundError,
+} from "../errors/error";
 
 interface CreateRepoConnectionUseCaseRequest {
 	providerUserId: string;

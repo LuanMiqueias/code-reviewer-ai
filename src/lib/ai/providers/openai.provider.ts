@@ -1,6 +1,6 @@
 import { env } from "@/env";
-import { AIProvider } from "@/lib/ai/providers/provider.interface";
 import { OpenAI } from "openai";
+import { AIProvider } from "./provider.interface";
 
 export class OpenAIProvider implements AIProvider {
 	private client = new OpenAI({ apiKey: env.OPENAI_API_KEY });
@@ -18,6 +18,15 @@ export class OpenAIProvider implements AIProvider {
 		return JSON.parse(res.choices[0].message.content ?? "{}");
 	}
 	analyzeCodeChunk(data: any): Promise<string> {
+		throw new Error("Method not implemented.");
+	}
+	generateIssueEmbedding(issue: { title: string; body: string }): Promise<any> {
+		throw new Error("Method not implemented.");
+	}
+	generateCodeChunkEmbedding(chunk: {
+		filename: string;
+		content: string;
+	}): Promise<number[]> {
 		throw new Error("Method not implemented.");
 	}
 }

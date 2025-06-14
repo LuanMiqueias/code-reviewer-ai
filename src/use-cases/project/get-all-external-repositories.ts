@@ -1,4 +1,3 @@
-import { InvalidCreditialError } from "../errors/invalid-credentials-error";
 import { UserRepository } from "../../repositories/user.repository";
 import { ProviderType, User } from "@prisma/client";
 import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
@@ -8,6 +7,7 @@ import {
 	RepoListItem,
 } from "@/infra/repo-provider/types/github-types";
 import { mapGithubRepoToRepoListItem } from "@/adapters/github/repo-list-item";
+import { InvalidCreditialError } from "../errors/error";
 
 interface GetAllExternalRepositoriesUseCaseRequest {
 	providerUserId: string;

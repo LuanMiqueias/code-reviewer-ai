@@ -4,6 +4,9 @@ import { GithubRepoDTO, GithubUserDTO } from "./types/github-types";
 import { env } from "@/env";
 import { GithubError } from "./errors/github-error";
 import { PaginatedResponse } from "@/@types/paginated-response";
+import { exec } from "child_process";
+import path from "path";
+import fs from "fs";
 
 export class GithubProvider implements RepoProviderInterface {
 	private readonly clientId = env.GITHUB_CLIENT_ID!;
@@ -23,11 +26,13 @@ export class GithubProvider implements RepoProviderInterface {
 			if (error instanceof AxiosError) {
 				throw new GithubError(
 					error.response?.data?.message ?? "GitHub error",
-					error.response?.status,
-					error.code
+					error.response?.status ?? 500
 				);
 			}
-			throw new GithubError("Unexpected error while communicating with GitHub");
+			throw new GithubError(
+				"Unexpected error while communicating with GitHub",
+				500
+			);
 		}
 	}
 	async findRepoByName({
@@ -96,15 +101,47 @@ export class GithubProvider implements RepoProviderInterface {
 			if (error instanceof AxiosError) {
 				throw new GithubError(
 					error.response?.data?.message ?? "GitHub error",
-					error.response?.status,
-					error.code
+					error.response?.status ?? 500
 				);
 			}
 			throw error instanceof GithubError
 				? error
 				: new GithubError(
-						"An unexpected error occurred while exchanging code for token"
+						"An unexpected error occurred while exchanging code for token",
+						500
 				  );
 		}
+	}
+	async cloneRepo(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		repoBranch: string;
+	}) {
+		const TEMP_DIR = path.resolve("./temp");
+		const LOCAL_REPO_PATH = path.join(TEMP_DIR, data?.repoName);
+
+		if (this.isRepoCloned(LOCAL_REPO_PATH)) {
+			console.log("Repository already cloned!");
+			return;
+		}
+
+		const remote = `https://${data?.token}@github.com/${data?.providerUserName}/${data?.repoName}.git`;
+
+		exec(
+			`git clone -b ${data?.repoBranch} ${remote} ${LOCAL_REPO_PATH}`,
+			(err, stdout, stderr) => {
+				if (err) {
+					console.error("Erro ao clonar:", stderr);
+					return;
+				}
+
+				console.log("✅ Repositório clonado!");
+			}
+		);
+	}
+
+	private isRepoCloned(localRepoPath: string): boolean {
+		return fs.existsSync(localRepoPath);
 	}
 }

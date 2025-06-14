@@ -10,6 +10,7 @@ const envSchema = z.object({
 	GITHUB_API_KEY: z.string(),
 	GITHUB_CLIENT_ID: z.string(),
 	GITHUB_CLIENT_SECRET: z.string(),
+	GEMINI_PROJECT_ID: z.string(),
 	// BITBUCKET_CLIENT_ID: z.string(),
 	// BITBUCKET_CLIENT_SECRET: z.string(),
 });

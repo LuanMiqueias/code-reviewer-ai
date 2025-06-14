@@ -4,12 +4,12 @@ import { z } from "zod";
 // Repositories
 
 // Use Cases
-import { InvalidCreditialError } from "@/use-cases/errors/invalid-credentials-error";
 import { AuthenticateUseCase } from "@/use-cases/user/github-authenticate";
 import { PrismaUserRepository } from "@/repositories/prisma/prisma-user-repository";
 import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-repository";
 import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
 import { ProviderType } from "@prisma/client";
+import { InvalidCreditialError } from "@/use-cases/errors/error";
 export const githubCallback = async (
 	req: FastifyRequest,
 	res: FastifyReply
@@ -18,37 +18,29 @@ export const githubCallback = async (
 		code: z.string(),
 	});
 
-	try {
-		const { code } = AuthenticateQuerySchema.parse(req.query);
+	const { code } = AuthenticateQuerySchema.parse(req.query);
 
-		const userRepository = new PrismaUserRepository();
-		const accountRepository = new PrismaAccountRepository();
-		const repoClientService = new RepoClientService(ProviderType.GITHUB);
+	const userRepository = new PrismaUserRepository();
+	const accountRepository = new PrismaAccountRepository();
+	const repoClientService = new RepoClientService(ProviderType.GITHUB);
 
-		const authenticateUseCase = new AuthenticateUseCase(
-			userRepository,
-			repoClientService,
-			accountRepository
-		);
+	const authenticateUseCase = new AuthenticateUseCase(
+		userRepository,
+		repoClientService,
+		accountRepository
+	);
 
-		const { user, providerUserId } = await authenticateUseCase.execute({
-			code,
-		});
+	const { user, providerUserId } = await authenticateUseCase.execute({
+		code,
+	});
 
-		const token = await res.jwtSign({
-			sign: {
-				sub: user.id,
-				providerUserId: providerUserId,
-				provider: ProviderType.GITHUB,
-			},
-		});
+	const token = await res.jwtSign({
+		sign: {
+			sub: user.id,
+			providerUserId: providerUserId,
+			provider: ProviderType.GITHUB,
+		},
+	});
 
-		return res.status(200).send({ user, token });
-	} catch (err) {
-		if (err instanceof InvalidCreditialError) {
-			return res.status(404).send({ message: err.message });
-		} else {
-			return res.status(500).send(); //TODO: fix later
-		}
-	}
+	return res.status(200).send({ user, token });
 };

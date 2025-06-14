@@ -1,3 +1,4 @@
+import { ProjectSettings } from "@prisma/client";
 import { GeminiProvider } from "./providers/gemini.provider";
 import { OpenAIProvider } from "./providers/openai.provider";
 import { AIProvider } from "./providers/provider.interface";
@@ -15,7 +16,16 @@ export class AIService {
 	chatCompletion(data: any) {
 		return this.provider.chatCompletion(data);
 	}
-	analyzeCodeChunk(chunk: { filename: string; content: string }) {
-		return this.provider.analyzeCodeChunk(chunk);
+	analyzeCodeChunk(
+		chunk: { filename: string; content: string },
+		settings: ProjectSettings
+	) {
+		return this.provider.analyzeCodeChunk(chunk, settings);
+	}
+	generateIssueEmbedding(issue: { title: string; body: string }) {
+		return this.provider.generateIssueEmbedding(issue);
+	}
+	generateCodeChunkEmbedding(chunk: { filename: string; content: string }) {
+		return this.provider.generateCodeChunkEmbedding(chunk);
 	}
 }

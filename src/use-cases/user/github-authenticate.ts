@@ -1,8 +1,8 @@
-import { InvalidCreditialError } from "../errors/invalid-credentials-error";
 import { UserRepository } from "../../repositories/user.repository";
 import { ProviderType, User } from "@prisma/client";
 import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
 import { AccountRepository } from "@/repositories/account.repository";
+import { InvalidCreditialError } from "../errors/error";
 
 interface AuthenticateUseCaseRequest {
 	code: string;

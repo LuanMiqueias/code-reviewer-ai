@@ -12,30 +12,41 @@ import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-re
 import { GithubError } from "@/infra/repo-provider/errors/github-error";
 import { CreateRepoConnectionUseCase } from "@/use-cases/project/create-repo-connection";
 import { PrismaRepoConnectionRepository } from "@/repositories/prisma/prisma-repo-connection-repository";
+import { AnalyzeRepoUseCase } from "@/use-cases/project/analyze-repo";
+import { PrismaProjectSettingsRepository } from "@/repositories/prisma/prisma-project-settings-repository";
+import { AIService } from "@/lib/ai/ai.service";
+import { PrismaReviewSessionRepository } from "@/repositories/prisma/prisma-review-session-repository";
+import { PrismaReviewIssueRepository } from "@/repositories/prisma/prisma-review-issue-repository";
 
-export const createRepoConnection = async (
+export const cloneExternalRepo = async (
 	req: FastifyRequest,
 	res: FastifyReply
 ) => {
-	const CreateRepoConnectionQuerySchema = z.object({
+	const CloneExternalRepoQuerySchema = z.object({
 		repoName: z.string(),
 	});
 
-	const { repoName } = CreateRepoConnectionQuerySchema.parse(req.params);
+	const { repoName } = CloneExternalRepoQuerySchema.parse(req.params);
 
 	const { provider, providerUserId } = req.user.sign;
 
-	const repoConnectionRepository = new PrismaRepoConnectionRepository();
+	const projectSettingsRepository = new PrismaProjectSettingsRepository();
 	const accountRepository = new PrismaAccountRepository();
 	const repoClientService = new RepoClientService(provider);
+	const reviewSessionRepository = new PrismaReviewSessionRepository();
+	const reviewIssueRepository = new PrismaReviewIssueRepository();
+	const aiService = new AIService("gemini");
 
-	const createRepoConnectionUseCase = new CreateRepoConnectionUseCase(
-		repoConnectionRepository,
+	const cloneExternalRepoUseCase = new AnalyzeRepoUseCase(
+		projectSettingsRepository,
+		repoClientService,
 		accountRepository,
-		repoClientService
+		reviewSessionRepository,
+		reviewIssueRepository,
+		aiService
 	);
 
-	const data = await createRepoConnectionUseCase.execute({
+	const data = await cloneExternalRepoUseCase.execute({
 		providerUserId,
 		provider,
 		repoName,

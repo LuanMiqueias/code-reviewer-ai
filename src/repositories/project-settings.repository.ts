@@ -1,4 +1,4 @@
-import { Prisma, ProjectSettings } from "@prisma/client";
+import { Prisma, ProjectSettings, RepoConnection } from "@prisma/client";
 
 export interface ProjectSettingsRepository {
 	create(
@@ -6,4 +6,13 @@ export interface ProjectSettingsRepository {
 		repoConnectionId: string
 	): Promise<ProjectSettings>;
 	findById(id: string): Promise<ProjectSettings | null>;
+	findByRepoConnectionId(
+		repoConnectionId: string
+	): Promise<ProjectSettings | null>;
+	findByRepoName(repoName: string): Promise<
+		| (ProjectSettings & {
+				RepoConnection: RepoConnection;
+		  })
+		| null
+	>;
 }

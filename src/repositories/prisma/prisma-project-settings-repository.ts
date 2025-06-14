@@ -2,7 +2,7 @@ import { prisma } from "../../lib/prisma";
 import { Prisma } from "@prisma/client";
 import { ProjectSettingsRepository } from "../project-settings.repository";
 
-export class PrismaRepoConnectionRepository
+export class PrismaProjectSettingsRepository
 	implements ProjectSettingsRepository
 {
 	async create(
@@ -26,6 +26,29 @@ export class PrismaRepoConnectionRepository
 		const projectSettings = await prisma.projectSettings.findUnique({
 			where: {
 				id,
+			},
+		});
+
+		return projectSettings;
+	}
+	async findByRepoConnectionId(repoConnectionId: string) {
+		const projectSettings = await prisma.projectSettings.findFirst({
+			where: {
+				RepoConnection: {
+					id: repoConnectionId,
+				},
+			},
+		});
+
+		return projectSettings;
+	}
+	async findByRepoName(repoName: string) {
+		const projectSettings = await prisma.projectSettings.findUnique({
+			where: {
+				repositoryId: repoName,
+			},
+			include: {
+				RepoConnection: true,
 			},
 		});
 

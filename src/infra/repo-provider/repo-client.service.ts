@@ -29,4 +29,13 @@ export class RepoClientService {
 	}) {
 		return this.provider.findRepoByName(data);
 	}
+
+	async cloneRepo(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		repoBranch: string;
+	}) {
+		return this.provider.cloneRepo(data);
+	}
 }
