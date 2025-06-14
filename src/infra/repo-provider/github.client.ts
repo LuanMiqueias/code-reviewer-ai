@@ -1,6 +1,10 @@
 import axios, { AxiosError } from "axios";
 import { RepoProviderInterface } from "./repo-client.interface";
-import { GithubRepoDTO, GithubUserDTO } from "./types/github-types";
+import {
+	GithubPullRequestFileDTO,
+	GithubRepoDTO,
+	GithubUserDTO,
+} from "./types/github-types";
 import { env } from "@/env";
 import { GithubError } from "./errors/github-error";
 import { PaginatedResponse } from "@/@types/paginated-response";
@@ -35,6 +39,7 @@ export class GithubProvider implements RepoProviderInterface {
 			);
 		}
 	}
+
 	async findRepoByName({
 		repoName,
 		providerUserName,
@@ -52,6 +57,7 @@ export class GithubProvider implements RepoProviderInterface {
 
 		return data;
 	}
+
 	async getRepos(
 		token: string,
 		page: number,
@@ -112,6 +118,7 @@ export class GithubProvider implements RepoProviderInterface {
 				  );
 		}
 	}
+
 	async cloneRepo(data: {
 		repoName: string;
 		providerUserName: string;
@@ -143,5 +150,40 @@ export class GithubProvider implements RepoProviderInterface {
 
 	private isRepoCloned(localRepoPath: string): boolean {
 		return fs.existsSync(localRepoPath);
+	}
+
+	async getPullRequest(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		prNumber: number;
+	}): Promise<GithubPullRequestFileDTO[]> {
+		const { data: pullRequest } = await this.safeRequest(() =>
+			this.axios.get<GithubPullRequestFileDTO[]>(
+				`/repos/${data?.providerUserName}/${data?.repoName}/pulls/${data?.prNumber}/files`,
+				{
+					headers: { Authorization: `Bearer ${data?.token}` },
+				}
+			)
+		);
+
+		return pullRequest;
+	}
+	async commentOnPullRequest(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		prNumber: number;
+		comment: string;
+	}) {
+		const { data: comment } = await this.safeRequest(() =>
+			this.axios.post(
+				`/repos/${data?.providerUserName}/${data?.repoName}/issues/${data?.prNumber}/comments`,
+				{ body: data?.comment },
+				{ headers: { Authorization: `Bearer ${data?.token}` } }
+			)
+		);
+
+		return comment;
 	}
 }

@@ -6,6 +6,7 @@ import { listExternalRepos } from "./list-external-repos.controller";
 import { createRepoConnection } from "./create-repo-connection.controller";
 import { createRepoSettings } from "./create-repo-settings.controller";
 import { cloneExternalRepo } from "./clone-external-repo.controller";
+import { githubWebhookController } from "./handle-pull-request-github.controller";
 
 export const projectRoutes = async (app: FastifyInstance) => {
 	app.get(
@@ -28,4 +29,5 @@ export const projectRoutes = async (app: FastifyInstance) => {
 		{ preHandler: [verifyJWT] },
 		cloneExternalRepo
 	);
+	app.post("/webhook/github/pull-request", githubWebhookController);
 };

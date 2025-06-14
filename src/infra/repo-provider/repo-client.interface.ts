@@ -1,5 +1,9 @@
 import { User } from "@prisma/client";
-import { GithubRepoDTO, GithubUserDTO } from "./types/github-types";
+import {
+	GithubPullRequestFileDTO,
+	GithubRepoDTO,
+	GithubUserDTO,
+} from "./types/github-types";
 import { PaginatedResponse } from "@/@types/paginated-response";
 
 export interface RepoProviderInterface {
@@ -20,5 +24,18 @@ export interface RepoProviderInterface {
 		providerUserName: string;
 		token: string;
 		repoBranch: string;
+	}): Promise<void>;
+	getPullRequest(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		prNumber: number;
+	}): Promise<GithubPullRequestFileDTO[]>;
+	commentOnPullRequest(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		prNumber: number;
+		comment: string;
 	}): Promise<void>;
 }

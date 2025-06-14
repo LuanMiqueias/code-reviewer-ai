@@ -60,7 +60,7 @@ Crie uma issue com as seguintes propriedades e retorne em um objeto JSON válido
 
   {
     "title": "Título curto e claro da issue",
-    "body": "Descrição breve da issue, incluindo impacto, sugestão de correção e exemplo de código, se possível."
+    "body": "Descrição breve da issue, incluindo impacto, sugestão de correçãoS."S
   }
 
 Se não houver issues, retorne um objeto vazio: {}

@@ -2,7 +2,7 @@ import { ProviderType } from "@prisma/client";
 import { GithubProvider } from "./github.client";
 import { RepoProviderInterface } from "./repo-client.interface";
 
-export class RepoClientService {
+export class RepoClientService implements RepoProviderInterface {
 	private provider: RepoProviderInterface;
 
 	constructor(provider: ProviderType) {
@@ -37,5 +37,23 @@ export class RepoClientService {
 		repoBranch: string;
 	}) {
 		return this.provider.cloneRepo(data);
+	}
+
+	async getPullRequest(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		prNumber: number;
+	}) {
+		return this.provider.getPullRequest(data);
+	}
+	async commentOnPullRequest(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		prNumber: number;
+		comment: string;
+	}) {
+		return this.provider.commentOnPullRequest(data);
 	}
 }

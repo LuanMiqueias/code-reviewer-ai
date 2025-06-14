@@ -39,6 +39,24 @@ export async function getRepoCodeChunks(repoPath: string, maxChunkSize = 1000) {
 	return chunks;
 }
 
+export async function getFileCodeChunks(
+	repoPath: string,
+	filename: string,
+	maxChunkSize = 1000
+) {
+	const fullPath = path.join(repoPath, filename);
+	const content = await readFile(fullPath, "utf-8");
+
+	const chunks: { filename: string; content: string }[] = [];
+
+	for (let i = 0; i < content.length; i += maxChunkSize) {
+		const chunk = content.slice(i, i + maxChunkSize);
+		chunks.push({ filename, content: chunk });
+	}
+
+	return chunks;
+}
+
 // export async function main() {
 // 	await cloneRepo();
 // 	const chunks = await getCodeChunks(LOCAL_REPO_PATH);
