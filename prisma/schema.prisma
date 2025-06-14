@@ -14,39 +14,44 @@ datasource db {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  email          String           @unique
-  name           String
-  passwordHash   String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  account        Account[]
-  repoConnection RepoConnection[]
+  id           String    @id @default(uuid())
+  email        String?   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  account      Account[]
 }
 
 model Account {
-  id             String       @id @default(uuid())
-  user           User         @relation(fields: [userId], references: [id])
-  userId         String
-  provider       ProviderType
-  providerUserId String
-  accessToken    String
-  createdAt      DateTime     @default(now())
+  id               String           @id @default(uuid())
+  user             User             @relation(fields: [userId], references: [id])
+  userId           String
+  providerUserName String
+  provider         ProviderType
+  providerUserId   String
+  accessToken      String
+  createdAt        DateTime         @default(now())
+  repoConnection   RepoConnection[]
 
   @@unique([provider, providerUserId])
 }
 
 model RepoConnection {
-  id        String           @id @default(uuid())
-  name      String
-  url       String
-  provider  ProviderType
-  tokenHash String?
-  user      User             @relation(fields: [userId], references: [id])
-  userId    String
-  settings  ProjectSettings?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id            String           @id @default(uuid())
+  name          String
+  cloneUrl      String
+  defaultBranch String
+  language      String
+  ownerName     String
+  provider      ProviderType
+  settings      ProjectSettings?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  account       Account?         @relation(fields: [accountId], references: [id])
+  accountId     String?
+
+  @@unique([accountId, name])
 }
 
 model ProjectSettings {

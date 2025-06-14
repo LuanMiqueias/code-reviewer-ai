@@ -9,14 +9,18 @@ export interface GithubUserDTO {
 export interface GithubRepoDTO {
 	id: number;
 	name: string;
-	full_name: string;
-	html_url: string;
-	description: string;
-	language: string | null;
-	private: boolean;
+	fullName: string;
 	owner: {
 		login: string;
+		avatarUrl: string;
 	};
+	description: string | null;
+	clone_url: string;
+	default_branch: string;
+	private: boolean;
+	language: string | null;
+	html_url: string;
+	nodeId?: string;
 }
 
 export type RepoListItem = {
@@ -27,4 +31,7 @@ export type RepoListItem = {
 	url: string;
 	language: string | null;
 	owner: string;
+	nodeId: string;
+	cloneUrl: string;
+	defaultBranch: string;
 };

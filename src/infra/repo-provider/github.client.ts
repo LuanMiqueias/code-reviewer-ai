@@ -30,6 +30,23 @@ export class GithubProvider implements RepoProviderInterface {
 			throw new GithubError("Unexpected error while communicating with GitHub");
 		}
 	}
+	async findRepoByName({
+		repoName,
+		providerUserName,
+		token,
+	}: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+	}): Promise<GithubRepoDTO> {
+		const { data } = await this.safeRequest(() =>
+			this.axios.get<GithubRepoDTO>(`/repos/${providerUserName}/${repoName}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+		);
+
+		return data;
+	}
 	async getRepos(
 		token: string,
 		page: number,
@@ -58,7 +75,7 @@ export class GithubProvider implements RepoProviderInterface {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 		);
-
+		console.log("data", data);
 		return data;
 	}
 

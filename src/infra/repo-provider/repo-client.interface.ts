@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { GithubUserDTO } from "./types/github-types";
+import { GithubRepoDTO, GithubUserDTO } from "./types/github-types";
 import { PaginatedResponse } from "@/@types/paginated-response";
 
 export interface RepoProviderInterface {
@@ -10,4 +10,9 @@ export interface RepoProviderInterface {
 	): Promise<PaginatedResponse<any>>;
 	fetchUser(token: string): Promise<GithubUserDTO>;
 	exchangeCodeForToken(code: string): Promise<{ accessToken: string }>;
+	findRepoByName(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+	}): Promise<GithubRepoDTO>;
 }

@@ -10,5 +10,8 @@ export function mapGithubRepoToRepoListItem(repo: GithubRepoDTO): RepoListItem {
 		url: repo.html_url,
 		language: repo.language,
 		owner: repo.owner.login,
+		nodeId: repo.nodeId || "",
+		cloneUrl: repo.clone_url,
+		defaultBranch: repo.default_branch,
 	};
 }

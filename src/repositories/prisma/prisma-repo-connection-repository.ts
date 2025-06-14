@@ -12,10 +12,15 @@ export class PrismaRepoConnectionRepository
 
 		return repoConnection;
 	}
-	async findById(id: string) {
+	async findById(accountId: string, repoName: string) {
+		console.log("accountId", accountId);
+		console.log("repoName", repoName);
 		const repoConnection = await prisma.repoConnection.findUnique({
 			where: {
-				id,
+				accountId_name: {
+					accountId,
+					name: repoName,
+				},
 			},
 		});
 

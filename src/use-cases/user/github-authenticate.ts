@@ -31,8 +31,7 @@ export class AuthenticateUseCase {
 
 		if (
 			!repoClientUser?.id ||
-			!repoClientUser?.email ||
-			!repoClientUser?.name
+			(!repoClientUser?.login && !repoClientUser?.name)
 		) {
 			throw new InvalidCreditialError();
 		}
@@ -56,13 +55,14 @@ export class AuthenticateUseCase {
 
 		const user = await this.userRepository.create({
 			email: repoClientUser.email,
-			name: repoClientUser.name,
+			name: repoClientUser.name || repoClientUser.login,
 			passwordHash: "",
 			account: {
 				create: {
 					provider: ProviderType.GITHUB,
 					providerUserId: repoClientUser.id.toString(),
 					accessToken: accessTokenGitHub,
+					providerUserName: repoClientUser.login,
 				},
 			},
 		});

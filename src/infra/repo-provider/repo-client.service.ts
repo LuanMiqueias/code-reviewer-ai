@@ -21,4 +21,12 @@ export class RepoClientService {
 	async exchangeCodeForToken(code: string) {
 		return this.provider.exchangeCodeForToken(code);
 	}
+
+	async findRepoByName(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+	}) {
+		return this.provider.findRepoByName(data);
+	}
 }
