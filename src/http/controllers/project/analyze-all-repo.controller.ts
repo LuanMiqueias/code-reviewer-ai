@@ -18,7 +18,7 @@ import { AIService } from "@/lib/ai/ai.service";
 import { PrismaReviewSessionRepository } from "@/repositories/prisma/prisma-review-session-repository";
 import { PrismaReviewIssueRepository } from "@/repositories/prisma/prisma-review-issue-repository";
 
-export const cloneExternalRepo = async (
+export const analyzeRepoController = async (
 	req: FastifyRequest,
 	res: FastifyReply
 ) => {

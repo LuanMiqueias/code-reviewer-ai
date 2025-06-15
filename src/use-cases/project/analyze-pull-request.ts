@@ -57,14 +57,12 @@ export class AnalyzePullRequestUseCase {
 		const TEMP_DIR = path.resolve("./temp");
 		const LOCAL_REPO_PATH = path.join(TEMP_DIR, repoName);
 
-		// Deletar tmp (delete temp directory before proceeding)
-
 		const repoConnectionSettings =
 			await this.projectSettingsRepository.findByRepoName(repoName);
 		const account =
 			await this.accountRepository.findByProviderAndProviderUserId(
 				provider,
-				providerUserId
+				providerUserId.toString()
 			);
 
 		if (!account) {
@@ -90,7 +88,7 @@ export class AnalyzePullRequestUseCase {
 			token: account.accessToken,
 			repoBranch: branch,
 		});
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await new Promise((resolve) => setTimeout(resolve, 5000));
 
 		const chunks: { filename: string; content: string }[] = [];
 		const chunksRaw: { filename: string; content: string }[] = [];
@@ -127,6 +125,7 @@ export class AnalyzePullRequestUseCase {
 				(issue) => cosineSimilarity(issue.embedding, embedding) > 0.9
 			);
 			if (isDuplicate) continue;
+			console.log("Analyzing chunk ----------------------");
 
 			const review = await this.aiService.analyzeCodeChunk(
 				chunk,
@@ -140,6 +139,8 @@ export class AnalyzePullRequestUseCase {
 				body: reviewParsed?.body || "",
 				embedding: embedding,
 			};
+
+			console.log("Creating issue ----------------------");
 
 			await this.reviewSessionRepository.create({
 				repository: {
@@ -158,6 +159,9 @@ export class AnalyzePullRequestUseCase {
 				filename: chunk.filename,
 			});
 		}
+
+		// ----------------------- Comment on pull request -----------------------
+		console.log("Commenting on pull request ----------------------");
 		await Promise.all(
 			reviews.map(async (review) => {
 				if (review.body === "") return;
@@ -170,10 +174,9 @@ export class AnalyzePullRequestUseCase {
 				});
 			})
 		);
-		const fs = require("fs");
-		if (fs.existsSync(TEMP_DIR)) {
-			fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-		}
+		console.log("Finished ----------------------");
+		await deleteTempDir(TEMP_DIR);
+
 		return {
 			repo: {
 				reviews,

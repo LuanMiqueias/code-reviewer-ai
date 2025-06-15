@@ -32,6 +32,7 @@ interface CreateSettingsUseCaseRequest {
 		architectureType: ArchitectureType;
 		language: string;
 		codingStyle: string;
+		description: string;
 	};
 }
 
@@ -85,6 +86,7 @@ export class CreateSettingsUseCase {
 				projectType: settings.projectType,
 				architecture: settings.architectureType,
 				codingStyle: settings.codingStyle,
+				description: settings.description,
 				RepoConnection: {
 					connect: {
 						id: repoConnection.id,

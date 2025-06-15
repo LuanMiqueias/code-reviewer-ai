@@ -64,6 +64,7 @@ model ProjectSettings {
   projectType  ProjectType
   architecture ArchitectureType
   codingStyle  String
+  description  String?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 }

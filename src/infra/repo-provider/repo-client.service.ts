@@ -56,4 +56,13 @@ export class RepoClientService implements RepoProviderInterface {
 	}) {
 		return this.provider.commentOnPullRequest(data);
 	}
+	async commentOnIssue(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		title: string;
+		body: string;
+	}) {
+		return this.provider.commentOnIssue(data);
+	}
 }

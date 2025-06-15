@@ -38,4 +38,11 @@ export interface RepoProviderInterface {
 		prNumber: number;
 		comment: string;
 	}): Promise<void>;
+	commentOnIssue(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		title: string;
+		body: string;
+	}): Promise<void>;
 }

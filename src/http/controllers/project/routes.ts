@@ -5,7 +5,7 @@ import { verifyJWT } from "@/http/middlewares/verify-jwt";
 import { listExternalRepos } from "./list-external-repos.controller";
 import { createRepoConnection } from "./create-repo-connection.controller";
 import { createRepoSettings } from "./create-repo-settings.controller";
-import { cloneExternalRepo } from "./clone-external-repo.controller";
+import { analyzeRepoController } from "./analyze-all-repo.controller";
 import { githubWebhookController } from "./handle-pull-request-github.controller";
 
 export const projectRoutes = async (app: FastifyInstance) => {
@@ -25,9 +25,9 @@ export const projectRoutes = async (app: FastifyInstance) => {
 		createRepoSettings
 	);
 	app.get(
-		"/projects/clone/external-repo/:repoName",
+		"/projects/analyze/repo/:repoName",
 		{ preHandler: [verifyJWT] },
-		cloneExternalRepo
+		analyzeRepoController
 	);
 	app.post("/webhook/github/pull-request", githubWebhookController);
 };

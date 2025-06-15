@@ -53,14 +53,15 @@ Analise o código do arquivo "${chunk.filename}" com base nas configurações ab
 - Tipo de Projeto: ${projectSettings.projectType}
 - Arquitetura: ${projectSettings.architecture}
 - Estilo de Código: ${projectSettings.codingStyle}
+- Descrição do projeto: ${projectSettings.description}
 
 Identifique problemas, vulnerabilidades e oportunidades de melhoria no código com base nessas características.
 
 Crie uma issue com as seguintes propriedades e retorne em um objeto JSON válido:
 
   {
-    "title": "Título curto e claro da issue",
-    "body": "Descrição breve da issue, incluindo impacto, sugestão de correçãoS."S
+    "title": "Título curto e claro da issue e inclua o o path do arquivo",
+    "body": "Descrição breve da issue, incluindo impacto, sugestão de correçãoS."
   }
 
 Se não houver issues, retorne um objeto vazio: {}

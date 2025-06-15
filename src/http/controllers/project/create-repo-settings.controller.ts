@@ -27,6 +27,7 @@ export const createRepoSettings = async (
 		architectureType: z.nativeEnum(ArchitectureType),
 		language: z.string(),
 		codingStyle: z.string(),
+		description: z.string(),
 	});
 
 	const { repoName } = CreateRepoConnectionParamsSchema.parse(req.params);
