@@ -1,84 +1,111 @@
-📋 Requisitos do Sistema: Code Reviewer AI
-🧠 Visão Geral
-O Code Reviewer AI é uma plataforma que se conecta com repositórios de código (inicialmente GitHub), analisa automaticamente o código-fonte utilizando agentes de IA (como Gemini ou OpenAI GPT) e sugere melhorias, boas práticas, refatorações e criação de issues diretamente no repositório. A arquitetura será extensível e modular, com foco em personalização por usuário.
+# 🤖 Code Reviewer AI
 
-⚙️ Stack Tecnológica
-Backend: Node.js, Fastify, TypeScript
+Code Reviewer AI é uma plataforma inteligente que conecta repositórios do GitHub e Bitbucket para realizar revisões automáticas de código com auxílio de IA. Ideal para detectar problemas de segurança, performance, estilo e arquitetura em tempo real, tanto em pushes quanto em pull requests.
 
-Banco de Dados: PostgreSQL com Prisma ORM
+---
+## 📡 API - Endpoints
 
-IA: Gemini (Google) e GPT (OpenAI), com suporte a RAG
+| Método | Rota                                         | Descrição                                                                 | Protegido por JWT |
+|--------|----------------------------------------------|---------------------------------------------------------------------------|-------------------|
+| POST   | `/auth/register`                             | Criação de usuário manual                                                | ❌                |
+| POST   | `/auth/login`                                | Login com e-mail e senha                                                 | ❌                |
+| POST   | `/auth/github`                               | Redireciona para autenticação com GitHub                                 | ❌                |
+| POST   | `/auth/github/callback`                      | Callback do OAuth do GitHub                                              | ❌                |
+| GET    | `/projects/list/external-repos`              | Lista repositórios externos do usuário autenticado                       | ✅                |
+| POST   | `/projects/create/connection/:repoName`      | Cria conexão entre a plataforma e um repositório externo                 | ✅                |
+| POST   | `/projects/create/settings/:repoName`        | Cria ou atualiza configurações do projeto para revisão                   | ✅                |
+| GET    | `/projects/analyze/repo/:repoName`           | Analisa o repositório completo e gera _issues_ com base na IA            | ✅                |
+| GET    | `/projects/create/context/:repoName`         | Cria embeddings (contexto vetorial) do repositório                       | ✅                |
+| POST   | `/webhook/github/pull-request`               | Webhook para receber eventos de Pull Requests do GitHub                  | ❌ (Webhook)      |
 
-Controle de Versão: GitHub (OAuth)
 
-Revisão Automatizada: Análise de código e Pull Requests
+---
+## ✨ Funcionalidades
 
-Extração de Conhecimento (RAG): Indexação de arquivos com embeddings e busca vetorial
+- 🔐 **Autenticação via OAuth (GitHub e Bitbucket)**
+- 🔗 **Conexão com múltiplos repositórios**
+- 📁 **Listagem paginada de repositórios**
+- 🤖 **Revisão automática de código com IA**
+- 📄 **Criação automática de _issues_ com sugestões e alertas**
+- 🧠 **Evita duplicações com RAG e vetores de embeddings (via Gemini)**
+- 🔄 **Análise de Pull Requests via Webhooks**
+- 📦 **Suporte a múltiplos projetos com configurações customizadas**
+- 🧹 **Limpeza automática de arquivos temporários após análise**
 
-🧑‍💻 Funcionalidades por Módulo
+---
 
-1. 🔐 Autenticação
-   Login com OAuth do GitHub
+## 🚀 Tecnologias
 
-Armazenamento seguro do token de acesso
+- **Node.js**, **TypeScript**
+- **Fastify**
+- **Prisma ORM** + **PostgreSQL**
+- **pgvector** (armazenamento vetorial)
+- **Google Gemini** para geração de embeddings e análise de código
+- **GitHub REST API v3**
+- **Bitbucket API** (em breve)
 
-Permissões mínimas necessárias: leitura/escrita em repositórios e Pull Requests
+---
 
-2. 👤 Módulo de Usuários
-   Cadastro e gerenciamento de configurações por usuário
+## 🧠 IA e Embeddings
 
-Configuração de:
+A plataforma utiliza **Gemini 1.5** para gerar embeddings vetoriais dos trechos de código e armazená-los com **pgvector**, permitindo:
 
-Linguagens usadas
+- Evitar _issues_ duplicadas
+- Consultar problemas semelhantes no histórico
+- Melhorar o contexto da análise com RAG (_retrieval-augmented generation_)
 
-Arquitetura do projeto (ex: MVC, DDD)
+---
 
-Área de foco: frontend, backend ou ambos
+## 🛠️ Como rodar localmente
+### 1. Clone o projeto
 
-3. 📦 Módulo de Repositórios
-   Conexão com repositórios via GitHub API
+```bash
+git clone https://github.com/seu-usuario/code-reviewer-ai.git
+cd code-reviewer-ai
+```
+### 2. Instale as dependências
 
-Listagem e sincronização dos repositórios do usuário
+```
+yarn install
+```
 
-Clonagem local para análise dos arquivos
+### 3. Configure o .env
+Crie um arquivo .env baseado em .env.example:
 
-Extração de caminhos dos arquivos
 
-Leitura e divisão de código em chunks
+### 4. Rode as migrations e o servidor
 
-4. 🧠 Módulo de Análise com IA
-   Envio de chunks para análise com IA (Gemini, GPT etc.)
+```
+npx prisma migrate dev
+npm run dev
+```
 
-Geração de issues com:
+# 🛣️ Roadmap do Projeto de Análise e Revisão de Código com IA
 
-Título
+Aqui está o roadmap ajustado para o seu projeto, com uma visão clara dos próximos passos e funcionalidades que planejamos implementar.
 
-Corpo explicativo com sugestões
+---
 
-Contexto técnico
+## Próximos Passos e Evoluções 🚀
 
-Criação automática de issues no GitHub via API
+Nosso objetivo é tornar a análise de código ainda mais inteligente e integrada.
 
-Geração em formato JSON para controle interno
+### Fase 1: Aprimoramento da Experiência e Análise
 
-5. 🔍 Análise de Pull Requests
-   Escuta de eventos de Pull Request (via webhook ou polling)
+* **✅ Login e Autenticação Aprimorados com GitHub**:
+    * Vamos refinar o fluxo de **login e autenticação OAuth com o GitHub**, buscando uma integração mais fluida e segura.
+* **✅ Análise Abrangente de Repositórios Conectados**:
+    * Expandiremos as capacidades de análise para **repositórios inteiros** que já estiverem conectados à plataforma, oferecendo uma visão completa do seu código.
+* **✅ Embeddings para Prevenção de Duplicações**:
+    * Utilizaremos **embeddings de código** para identificar e evitar a duplicação de "issues" ou análises repetitivas, otimizando o processo e garantindo feedbacks mais relevantes.
+* **✅ Suporte Completo a Pull Requests (PRs)**:
+    * Aprimoraremos a funcionalidade de análise em **Pull Requests**, garantindo que os feedbacks da IA sejam integrados de forma eficaz ao seu fluxo de trabalho de desenvolvimento.
 
-Análise somente dos arquivos modificados
+### Fase 2: Expansão e Visualização
 
-Sugestões inline (ou fallback para comentário agregado com contexto)
-
-Geração de review automático com botão "Aprovar" ou "Solicitar mudanças"
-
-6. 🧠 RAG - Retrieval-Augmented Generation
-   Armazenamento dos códigos em forma vetorial (embeddings)
-
-Integração com um vetor DB como:
-
-PostgreSQL + pgvector
-
-Pinecone, Weaviate ou Qdrant (futuramente)
-
-Uso de contexto dos arquivos do projeto para enriquecer os prompts
-
-Possibilidade de consultar múltiplos arquivos para análise contextual
+* **🕗 Suporte Completo ao Bitbucket**:
+    * Adicionaremos **suporte total ao Bitbucket** como provedor de repositórios, para que usuários com projetos nessa plataforma também possam aproveitar nossa análise de código com IA.
+* **🕗 Painel Web Intuitivo com Feedbacks dos Reviews**:
+    *Será possivel visualizar e gerenciar facilmente os feedbacks das análises de código.
+* **🕗 Histórico Completo de Análises por Projeto**:
+    * Funcionalidade para registrar e exibir o **histórico detalhado de todas as análises** realizadas para cada projeto, sendo possivel acompanhar a evolução da qualidade do código ao longo do tempo.
