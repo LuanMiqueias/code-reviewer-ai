@@ -80,15 +80,13 @@ npx prisma migrate dev
 npm run dev
 ```
 
-# 🛣️ Roadmap do Projeto de Análise e Revisão de Código com IA
-
-Aqui está o roadmap ajustado para o seu projeto, com uma visão clara dos próximos passos e funcionalidades que planejamos implementar.
+# 🛣️ Roadmap
 
 ---
 
 ## Próximos Passos e Evoluções 🚀
 
-Nosso objetivo é tornar a análise de código ainda mais inteligente e integrada.
+Objetivo é tornar a análise de código ainda mais inteligente e integrada.
 
 ### Fase 1: Aprimoramento da Experiência e Análise
 
