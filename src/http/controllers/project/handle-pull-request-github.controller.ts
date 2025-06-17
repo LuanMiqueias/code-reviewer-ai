@@ -3,10 +3,10 @@ import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-re
 import { PrismaProjectSettingsRepository } from "@/repositories/prisma/prisma-project-settings-repository";
 import { PrismaReviewSessionRepository } from "@/repositories/prisma/prisma-review-session-repository";
 import { PrismaReviewIssueRepository } from "@/repositories/prisma/prisma-review-issue-repository";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
-import { AnalyzePullRequestUseCase } from "@/use-cases/project/analyze-pull-request";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { ProviderType } from "@prisma/client";
+import { AnalyzePullRequestUseCase } from "@/use-cases/project/analyze-pull-request";
 
 export async function githubWebhookController(
 	req: FastifyRequest,
@@ -18,9 +18,10 @@ export async function githubWebhookController(
 	const projectSettingsRepository = new PrismaProjectSettingsRepository();
 	const accountRepository = new PrismaAccountRepository();
 	const repoClientService = new RepoClientService("GITHUB");
-	const reviewSessionRepository = new PrismaReviewSessionRepository();
-	const reviewIssueRepository = new PrismaReviewIssueRepository();
 	const aiService = new AIService("gemini");
+	const reviewIssueRepository = new PrismaReviewIssueRepository();
+	const reviewSessionRepository = new PrismaReviewSessionRepository();
+
 	const analyzePullRequestUseCase = new AnalyzePullRequestUseCase(
 		projectSettingsRepository,
 		repoClientService,

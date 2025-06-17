@@ -23,3 +23,9 @@ export class UserAlreadyExistsError extends AppError {
 		super(message || "User already exists.", 400);
 	}
 }
+
+export class ErrorProcessingFilesInChunksWithEmbeddings extends AppError {
+	constructor(message?: string) {
+		super(message || "Error processing files in chunks with embeddings.", 500);
+	}
+}

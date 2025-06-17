@@ -1,29 +1,27 @@
-import {
-	ProjectSettings,
-	ProviderType,
-	ProjectType,
-	ArchitectureType,
-} from "@prisma/client";
-import { AccountRepository } from "@/repositories/account.repository";
-
-import { RepoConnectionRepository } from "@/repositories/repo-connection.repository";
-import { ProjectSettingsRepository } from "@/repositories/project-settings.repository";
-import {
-	InvalidCreditialError,
-	ResourceAlreadyExistsError,
-	ResourceNotFoundError,
-} from "../errors/error";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
-import { deleteTempDir } from "@/utils/delete-temp-files";
 import path from "path";
-import {
-	getFileCodeChunks,
-	getRepoCodeChunks,
-} from "@/utils/get-local-repo-code-chunks";
-import { AIService } from "@/lib/ai/ai.service";
-import { parseIssuesFromAIResponse } from "@/utils/parse-issues-from-AI-response";
+
+// Repositories
+import { AccountRepository } from "@/repositories/account.repository";
 import { ReviewIssueRepository } from "@/repositories/review-issue.repository";
 import { ReviewSessionRepository } from "@/repositories/review-session.repository";
+
+import { ProjectSettingsRepository } from "@/repositories/project-settings.repository";
+
+// Services
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
+import { AIService } from "@/lib/ai/ai.service";
+
+// Errors
+import { InvalidCreditialError, ResourceNotFoundError } from "../errors/error";
+
+// Utils
+import { parseIssuesFromAIResponse } from "@/utils/parse-issues-from-AI-response";
+import { deleteTempDir } from "@/utils/delete-temp-files";
+
+// Types
+import { ProviderType } from "@prisma/client";
+import { cosineSimilarity } from "@/utils/cosine-similarity";
+import { processFilesInChunksWithEmbeddings } from "../helpers/process-files-in-chunks-with-embeddings";
 
 interface AnalyzePullRequestUseCaseRequest {
 	repoName: string;
@@ -57,14 +55,12 @@ export class AnalyzePullRequestUseCase {
 		const TEMP_DIR = path.resolve("./temp");
 		const LOCAL_REPO_PATH = path.join(TEMP_DIR, repoName);
 
-		// Deletar tmp (delete temp directory before proceeding)
-
 		const repoConnectionSettings =
 			await this.projectSettingsRepository.findByRepoName(repoName);
 		const account =
 			await this.accountRepository.findByProviderAndProviderUserId(
 				provider,
-				providerUserId
+				providerUserId.toString()
 			);
 
 		if (!account) {
@@ -84,109 +80,138 @@ export class AnalyzePullRequestUseCase {
 			token: account.accessToken,
 		});
 
+		// ----------------------- Get issues from database -----------------------
+		const issues = await this.reviewIssueRepository.getAllByReviewSessionId(
+			repoConnectionSettings.RepoConnection.id
+		);
+
 		await this.repoClientService.cloneRepo({
 			repoName,
 			providerUserName: account.providerUserName,
 			token: account.accessToken,
 			repoBranch: branch,
 		});
-		await new Promise((resolve) => setTimeout(resolve, 1000));
 
-		const chunks: { filename: string; content: string }[] = [];
-		const chunksRaw: { filename: string; content: string }[] = [];
+		await new Promise((resolve) => setTimeout(resolve, 5000));
 
-		await Promise.all(
-			pullRequestFiles.map(async (file) => {
-				if (!/\.(ts|js|tsx|jsx)$/.test(file.filename)) {
-					return;
-				}
-				const fileContent = await getFileCodeChunks(
-					LOCAL_REPO_PATH,
-					file.filename,
-					4000
-				);
-				chunksRaw.push(...fileContent);
-			})
-		);
-
-		chunks.push(...chunksRaw);
-
-		const issues = await this.reviewIssueRepository.getAllByReviewSessionId(
-			repoConnectionSettings.RepoConnection.id
-		);
+		const {
+			bigChunks: bigChunksWithEmbedding,
+			smallChunks: smallChunksWithEmbedding,
+		} = await processFilesInChunksWithEmbeddings({
+			LOCAL_REPO_PATH,
+			files: pullRequestFiles.filter((file) => file.status !== "removed"),
+			entriesFilesToAnalyze: repoConnectionSettings.entriesFilesToAnalyze,
+			generateCodeChunkEmbedding: ({ filename, content }) =>
+				this.aiService.generateCodeChunkEmbedding({
+					filename,
+					content,
+				}),
+		});
 
 		const reviews: { title: string; body: string; filename: string }[] = [];
-		const reviewsRaw: string[] = [];
 
-		for (const chunk of chunks) {
-			const embedding = await this.aiService.generateCodeChunkEmbedding({
-				filename: chunk.filename,
-				content: chunk.content,
-			});
-			const isDuplicate = issues.some(
-				(issue) => cosineSimilarity(issue.embedding, embedding) > 0.9
+		for (const chunk of smallChunksWithEmbedding) {
+			// ----------------------- Check if issue is duplicate -----------------------
+			const isDuplicate = issues.find(
+				(issue) => chunk.filename === issue?.filePath
 			);
 			if (isDuplicate) continue;
 
+			console.log(
+				"Analyzing chunk ----------------------",
+				chunk.filename,
+				chunk.id
+			);
+
+			// Filter big chunks to get the most similar chunks - 0.9 is the threshold
+			const contexts = bigChunksWithEmbedding.filter(
+				(chunkToContext) =>
+					chunkToContext.id !== chunk.id &&
+					cosineSimilarity(chunk.embedding, chunkToContext.embedding) > 0.9
+			);
+
+			// Analyze code chunk with AI
 			const review = await this.aiService.analyzeCodeChunk(
-				chunk,
+				contexts,
+				{
+					content: chunk.content,
+					filename: chunk.filename,
+				},
 				repoConnectionSettings
 			);
+
+			// Parse issues from AI response
 			const reviewParsed = parseIssuesFromAIResponse(review);
 			if (!reviewParsed) continue;
 
-			const issuesToCreate = {
-				title: reviewParsed?.title || "",
-				body: reviewParsed?.body || "",
-				embedding: embedding,
-			};
+			console.log(
+				"Waiting 10 seconds to avoid rate limit ----------------------",
+				chunk.filename
+			);
+			await new Promise((resolve) => setTimeout(resolve, 10000));
 
-			await this.reviewSessionRepository.create({
-				repository: {
-					connect: {
-						id: repoConnectionSettings.RepoConnection.id,
-					},
-				},
-				issues: {
-					create: [issuesToCreate],
-				},
-			});
-			reviewsRaw.push(review);
 			reviews.push({
 				title: reviewParsed?.title || "",
 				body: reviewParsed?.body || "",
 				filename: chunk.filename,
 			});
+
+			// Comment on pull request -----------------------
+			console.log("Commenting on pull request ----------------------");
+			await this.repoClientService.commentOnPullRequest({
+				repoName,
+				providerUserName: account.providerUserName,
+				token: account.accessToken,
+				prNumber,
+				comment: `${reviewParsed.title}\n${reviewParsed.body}`,
+			});
 		}
-		await Promise.all(
-			reviews.map(async (review) => {
-				if (review.body === "") return;
-				await this.repoClientService.commentOnPullRequest({
-					repoName,
-					providerUserName: account.providerUserName,
-					token: account.accessToken,
-					prNumber,
-					comment: `${review.filename}\n${review.title}\n${review.body}`,
-				});
-			})
-		);
-		const fs = require("fs");
-		if (fs.existsSync(TEMP_DIR)) {
-			fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-		}
+
+		await this.reviewSessionRepository.create({
+			repository: {
+				connect: {
+					id: repoConnectionSettings.RepoConnection.id,
+				},
+			},
+			issues: {
+				create: reviews?.map((review) => {
+					return {
+						body: review?.body,
+						title: review?.title,
+						filename: review?.filename,
+					};
+				}),
+			},
+		});
+
+		console.log("Finished ----------------------");
+		// await deleteTempDir(TEMP_DIR);
+
 		return {
 			repo: {
 				reviews,
-				chunks,
-				totalChunks: chunks.length,
+
+				smallChunks: smallChunksWithEmbedding.map((chunk) => {
+					return {
+						filename: chunk.filename,
+						id: chunk.id,
+						contexts: bigChunksWithEmbedding
+							.filter(
+								(chunkToContext) =>
+									chunkToContext.id !== chunk.id &&
+									cosineSimilarity(chunk.embedding, chunkToContext.embedding) >
+										0.9
+							)
+							.map((chunk) => {
+								return {
+									filename: chunk.filename,
+									id: chunk.id,
+								};
+							}),
+					};
+				}),
+				totalChunks: smallChunksWithEmbedding.length,
 			},
 		};
 	}
-}
-
-function cosineSimilarity(a: number[], b: number[]) {
-	const dot = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
-	const normA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
-	const normB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
-	return dot / (normA * normB);
 }

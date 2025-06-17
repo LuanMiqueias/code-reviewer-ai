@@ -1,9 +1,11 @@
-import { rm } from "fs/promises";
+import fs from "fs";
 
-export async function deleteTempDir(path: string) {
+export async function deleteTempDir(TEMP_DIR: string) {
 	try {
-		await rm(path, { recursive: true, force: true });
-		console.log(`Temp dir "${path}" deleted successfully.`);
+		if (fs.existsSync(TEMP_DIR)) {
+			fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+		}
+		console.log(`Temp dir "${TEMP_DIR}" deleted successfully.`);
 	} catch (error) {
 		console.error(`Error deleting directory:`, error);
 	}

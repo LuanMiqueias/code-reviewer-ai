@@ -186,4 +186,28 @@ export class GithubProvider implements RepoProviderInterface {
 
 		return comment;
 	}
+	async commentOnIssue(data: {
+		repoName: string;
+		providerUserName: string;
+		token: string;
+		title: string;
+		body: string;
+	}) {
+		const { data: comment } = await this.safeRequest(() =>
+			this.axios.post(
+				`/repos/${data?.providerUserName}/${data?.repoName}/issues`,
+				{
+					title: data?.title,
+					body: data?.body,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${data?.token}`,
+					},
+				}
+			)
+		);
+
+		return comment;
+	}
 }

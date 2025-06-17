@@ -1,5 +1,5 @@
-import { GithubRepoDTO } from "@/infra/repo-provider/types/github-types";
-import { RepoListItem } from "@/infra/repo-provider/types/github-types";
+import { GithubRepoDTO } from "@/lib/repo-provider/types/github-types";
+import { RepoListItem } from "@/lib/repo-provider/types/github-types";
 
 export function mapGithubRepoToRepoListItem(repo: GithubRepoDTO): RepoListItem {
 	return {

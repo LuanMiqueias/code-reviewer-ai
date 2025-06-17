@@ -12,12 +12,14 @@ import { env } from "./env";
 import { userRoutes } from "./http/controllers/user/routes";
 import { formatZodError } from "./utils/format-zod-error";
 import { projectRoutes } from "./http/controllers/project/routes";
-import { GithubError } from "./infra/repo-provider/errors/github-error";
+import { GithubError } from "./lib/repo-provider/errors/github-error";
 import {
+	ErrorProcessingFilesInChunksWithEmbeddings,
 	InvalidCreditialError,
 	ResourceAlreadyExistsError,
 	ResourceNotFoundError,
 } from "./use-cases/errors/error";
+import { GeminiError } from "./lib/ai/providers/errors/gemini-error";
 
 export const app = fastify();
 
@@ -47,18 +49,24 @@ app.setErrorHandler((error, req, res) => {
 	if (env.NODE_ENV === "dev") {
 		console.log(error);
 	}
+	const errorMap = new Map<Function, number>([
+		[ResourceNotFoundError, 400],
+		[ResourceAlreadyExistsError, 400],
+		[InvalidCreditialError, 401],
+		[ErrorProcessingFilesInChunksWithEmbeddings, 500],
+		[GithubError, 500],
+		[GeminiError, 500],
+	]);
 
-	if (error instanceof ResourceNotFoundError) {
-		return res.status(400).send({ message: error.message });
-	}
-	if (error instanceof ResourceAlreadyExistsError) {
-		return res.status(400).send({ message: error.message });
-	}
-	if (error instanceof GithubError) {
-		return res.status(error.statusCode || 500).send({ message: error.message });
-	}
-	if (error instanceof InvalidCreditialError) {
-		return res.status(401).send({ message: error.message });
+	for (const [ErrorClass, status] of errorMap.entries()) {
+		if (error instanceof ErrorClass) {
+			const statusCode =
+				error instanceof GithubError && error.statusCode
+					? error.statusCode
+					: status;
+
+			return res.status(statusCode).send({ message: error.message });
+		}
 	}
 	return res.status(500).send({ message: "Internal Server Error" });
 });
