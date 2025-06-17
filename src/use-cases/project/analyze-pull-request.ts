@@ -178,7 +178,7 @@ export class AnalyzePullRequestUseCase {
 					return {
 						body: review?.body,
 						title: review?.title,
-						filename: review?.filename,
+						filePath: review?.filename,
 					};
 				}),
 			},
