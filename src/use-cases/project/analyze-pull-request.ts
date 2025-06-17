@@ -144,12 +144,6 @@ export class AnalyzePullRequestUseCase {
 			const reviewParsed = parseIssuesFromAIResponse(review);
 			if (!reviewParsed) continue;
 
-			console.log(
-				"Waiting 10 seconds to avoid rate limit ----------------------",
-				chunk.filename
-			);
-			await new Promise((resolve) => setTimeout(resolve, 10000));
-
 			reviews.push({
 				title: reviewParsed?.title || "",
 				body: reviewParsed?.body || "",
@@ -165,6 +159,12 @@ export class AnalyzePullRequestUseCase {
 				prNumber,
 				comment: `${reviewParsed.title}\n${reviewParsed.body}`,
 			});
+
+			console.log(
+				"Waiting 10 seconds to avoid rate limit ----------------------",
+				chunk.filename
+			);
+			await new Promise((resolve) => setTimeout(resolve, 10000));
 		}
 
 		await this.reviewSessionRepository.create({
