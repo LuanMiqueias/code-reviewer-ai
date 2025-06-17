@@ -1,27 +1,20 @@
-import { UserRepository } from "../../repositories/user.repository";
-import {
-	ProjectSettings,
-	ProviderType,
-	RepoConnection,
-	User,
-	ProjectType,
-	ArchitectureType,
-} from "@prisma/client";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
+import { ProjectSettings, ProviderType, ProjectType } from "@prisma/client";
+import path from "path";
+
+// Repositories
 import { AccountRepository } from "@/repositories/account.repository";
-import {
-	GithubRepoDTO,
-	RepoListItem,
-} from "@/infra/repo-provider/types/github-types";
-import { mapGithubRepoToRepoListItem } from "@/adapters/github/repo-list-item";
 import { RepoConnectionRepository } from "@/repositories/repo-connection.repository";
-import { RepoProviderInterface } from "@/infra/repo-provider/repo-client.interface";
 import { ProjectSettingsRepository } from "@/repositories/project-settings.repository";
+
+// Errors
 import {
 	InvalidCreditialError,
 	ResourceAlreadyExistsError,
 	ResourceNotFoundError,
 } from "../errors/error";
+import { getRepoCodeChunks } from "@/utils/get-local-repo-code-chunks";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
+import { AIService } from "@/lib/ai/ai.service";
 
 interface CreateSettingsUseCaseRequest {
 	providerUserId: string;
@@ -29,10 +22,12 @@ interface CreateSettingsUseCaseRequest {
 	repoName: string;
 	settings: {
 		projectType: ProjectType;
-		architectureType: ArchitectureType;
+		architectureType: string;
 		language: string;
 		codingStyle: string;
 		description: string;
+		entriesFilesToAnalyze?: string[];
+		entriesFoldersToIgnore?: string[];
 	};
 }
 
@@ -53,6 +48,9 @@ export class CreateSettingsUseCase {
 		repoName,
 		settings,
 	}: CreateSettingsUseCaseRequest): Promise<CreateSettingsUseCaseResponse> {
+		const TEMP_DIR = path.resolve("./temp");
+		const LOCAL_REPO_PATH = path.join(TEMP_DIR, repoName);
+
 		const repoConnectionSettingsExists =
 			await this.projectSettingsRepository.findByRepoName(repoName);
 		if (repoConnectionSettingsExists) {
@@ -61,24 +59,52 @@ export class CreateSettingsUseCase {
 			);
 		}
 
-		const userAccount =
+		const account =
 			await this.accountRepository.findByProviderAndProviderUserId(
 				provider,
-				providerUserId
+				providerUserId.toString()
 			);
 
-		if (!userAccount?.accessToken) {
-			throw new InvalidCreditialError();
+		if (!account) {
+			throw new InvalidCreditialError(`Invalid credentials`);
 		}
 
 		const repoConnection = await this.repoConnectionRepository.findById(
-			userAccount?.id || "",
+			account?.id || "",
 			repoName
 		);
 
 		if (!repoConnection?.id) {
 			throw new ResourceNotFoundError(`Repository ${repoName} not found`);
 		}
+
+		// TODO: Remove later
+		// await this.repoClientService.cloneRepo({
+		// 	repoName,
+		// 	providerUserName: account.providerUserName,
+		// 	token: account.accessToken,
+		// 	repoBranch: repoConnection.defaultBranch,
+		// });
+		// await new Promise((resolve) => setTimeout(resolve, 5000));
+
+		// const chunks = await getRepoCodeChunks(
+		// 	LOCAL_REPO_PATH,
+		// 	4000,
+		// 	settings.entriesFilesToAnalyze,
+		// 	settings.entriesFoldersToIgnore
+		// );
+		// const chunksWithEmbedding = await Promise.all(
+		// 	chunks.map(async (chunk) => {
+		// 		const embedding = await this.aiService.generateCodeChunkEmbedding({
+		// 			filename: chunk.filename,
+		// 			content: chunk.content,
+		// 		});
+		// 		return {
+		// 			...chunk,
+		// 			embedding,
+		// 		};
+		// 	})
+		// );
 
 		const projectSettings = await this.projectSettingsRepository.create(
 			{
@@ -87,11 +113,22 @@ export class CreateSettingsUseCase {
 				architecture: settings.architectureType,
 				codingStyle: settings.codingStyle,
 				description: settings.description,
+				entriesFilesToAnalyze: settings.entriesFilesToAnalyze || [],
+				entriesFoldersToIgnore: settings.entriesFilesToAnalyze || [],
 				RepoConnection: {
 					connect: {
 						id: repoConnection.id,
 					},
 				},
+				// TODO: Remove later
+				// embeddings: {
+				// 	createMany: {
+				// 		data: chunksWithEmbedding.map((chunk) => ({
+				// 			embedding: chunk.embedding,
+				// 			filePath: chunk.filename,
+				// 		})),
+				// 	},
+				// },
 			},
 			repoConnection.id
 		);

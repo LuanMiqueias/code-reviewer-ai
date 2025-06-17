@@ -1,6 +1,6 @@
 import { UserRepository } from "../../repositories/user.repository";
 import { ProviderType, User } from "@prisma/client";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { AccountRepository } from "@/repositories/account.repository";
 import { InvalidCreditialError } from "../errors/error";
 

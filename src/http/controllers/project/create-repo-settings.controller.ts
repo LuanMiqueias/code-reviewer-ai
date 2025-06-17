@@ -2,18 +2,15 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 // Repositories
-import { PrismaUserRepository } from "../../../repositories/prisma/prisma-user-repository";
+import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-repository";
+import { PrismaRepoConnectionRepository } from "@/repositories/prisma/prisma-repo-connection-repository";
+import { PrismaProjectSettingsRepository } from "@/repositories/prisma/prisma-project-settings-repository";
 
 // Use Cases
-import { GetAllExternalRepositoriesUseCase } from "@/use-cases/project/get-all-external-repositories";
-import { ArchitectureType, ProjectType, ProviderType } from "@prisma/client";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
-import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-repository";
-import { GithubError } from "@/infra/repo-provider/errors/github-error";
-import { CreateRepoConnectionUseCase } from "@/use-cases/project/create-repo-connection";
-import { PrismaRepoConnectionRepository } from "@/repositories/prisma/prisma-repo-connection-repository";
 import { CreateSettingsUseCase } from "@/use-cases/project/create-repo-settings";
-import { PrismaProjectSettingsRepository } from "@/repositories/prisma/prisma-project-settings-repository";
+
+// Types
+import { ProjectType } from "@prisma/client";
 
 export const createRepoSettings = async (
 	req: FastifyRequest,
@@ -24,10 +21,12 @@ export const createRepoSettings = async (
 	});
 	const CreateRepoSettingsQuerySchema = z.object({
 		projectType: z.nativeEnum(ProjectType),
-		architectureType: z.nativeEnum(ArchitectureType),
+		architectureType: z.string(),
 		language: z.string(),
 		codingStyle: z.string(),
 		description: z.string(),
+		entriesFilesToAnalyze: z.array(z.string()),
+		entriesFoldersToIgnore: z.array(z.string()),
 	});
 
 	const { repoName } = CreateRepoConnectionParamsSchema.parse(req.params);
@@ -38,6 +37,7 @@ export const createRepoSettings = async (
 	const repoConnectionRepository = new PrismaRepoConnectionRepository();
 	const accountRepository = new PrismaAccountRepository();
 	const projectSettingsRepository = new PrismaProjectSettingsRepository();
+
 	const createRepoSettingsUseCase = new CreateSettingsUseCase(
 		projectSettingsRepository,
 		repoConnectionRepository,

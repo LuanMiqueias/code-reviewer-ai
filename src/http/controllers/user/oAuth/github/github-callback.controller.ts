@@ -7,7 +7,7 @@ import { z } from "zod";
 import { AuthenticateUseCase } from "@/use-cases/user/github-authenticate";
 import { PrismaUserRepository } from "@/repositories/prisma/prisma-user-repository";
 import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-repository";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { ProviderType } from "@prisma/client";
 import { InvalidCreditialError } from "@/use-cases/errors/error";
 export const githubCallback = async (

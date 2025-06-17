@@ -7,9 +7,9 @@ import { PrismaUserRepository } from "../../../repositories/prisma/prisma-user-r
 // Use Cases
 import { GetAllExternalRepositoriesUseCase } from "@/use-cases/project/get-all-external-repositories";
 import { ProviderType } from "@prisma/client";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { PrismaAccountRepository } from "@/repositories/prisma/prisma-account-repository";
-import { GithubError } from "@/infra/repo-provider/errors/github-error";
+import { GithubError } from "@/lib/repo-provider/errors/github-error";
 import { CreateRepoConnectionUseCase } from "@/use-cases/project/create-repo-connection";
 import { PrismaRepoConnectionRepository } from "@/repositories/prisma/prisma-repo-connection-repository";
 

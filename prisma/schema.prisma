@@ -60,13 +60,26 @@ model ProjectSettings {
   RepoConnection RepoConnection @relation(fields: [repositoryId], references: [name])
   repositoryId   String         @unique
 
-  language     String
-  projectType  ProjectType
-  architecture ArchitectureType
-  codingStyle  String
-  description  String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  language               String
+  projectType            ProjectType
+  architecture           String           @default("")
+  codingStyle            String
+  description            String?
+  entriesFilesToAnalyze  String[]         @default(["**/*.{ts,js,tsx,jsx}"])
+  entriesFoldersToIgnore String[]         @default(["node_modules", "dist", "build", "public"])
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  embeddings             CodeChunkEmbed[]
+}
+
+model CodeChunkEmbed {
+  id                String           @id @default(uuid())
+  filePath          String
+  embedding         Float[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  ProjectSettings   ProjectSettings? @relation(fields: [projectSettingsId], references: [id])
+  projectSettingsId String?
 }
 
 model ReviewSession {
@@ -81,9 +94,9 @@ model ReviewIssue {
   id              String        @id @default(uuid())
   reviewSession   ReviewSession @relation(fields: [reviewSessionId], references: [id])
   reviewSessionId String
+  filePath        String        @default("")
   title           String
   body            String
-  embedding       Float[]
   createdAt       DateTime      @default(now())
 }
 
@@ -96,8 +109,4 @@ enum ProjectType {
   FRONTEND
   BACKEND
   FULLSTACK
-}
-
-enum ArchitectureType {
-  DDD
 }

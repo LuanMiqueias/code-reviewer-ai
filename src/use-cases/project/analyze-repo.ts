@@ -1,9 +1,4 @@
-import {
-	ProjectSettings,
-	ProviderType,
-	ProjectType,
-	ArchitectureType,
-} from "@prisma/client";
+import { ProviderType } from "@prisma/client";
 import { AccountRepository } from "@/repositories/account.repository";
 
 import { RepoConnectionRepository } from "@/repositories/repo-connection.repository";
@@ -13,7 +8,7 @@ import {
 	ResourceAlreadyExistsError,
 	ResourceNotFoundError,
 } from "../errors/error";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { deleteTempDir } from "@/utils/delete-temp-files";
 import path from "path";
 import { getRepoCodeChunks } from "@/utils/get-local-repo-code-chunks";
@@ -97,13 +92,14 @@ export class AnalyzeRepoUseCase {
 				content: chunk.content,
 			});
 			// ----------------------- Check if issue is duplicate -----------------------
-			const isDuplicate = issues.some(
-				(issue) => cosineSimilarity(issue.embedding, embedding) > 0.9
+			const isDuplicate = issues.find(
+				(issue) => chunk.filename === issue?.filePath
 			);
 			if (isDuplicate) continue;
 
 			// ----------------------- Analyze code chunk -----------------------
 			const review = await this.aiService.analyzeCodeChunk(
+				[],
 				chunk,
 				repoConnectionSettings
 			);
@@ -116,6 +112,7 @@ export class AnalyzeRepoUseCase {
 				title: reviewParsed?.title || "",
 				body: reviewParsed?.body || "",
 				embedding: embedding,
+				filePath: chunk.filename,
 			};
 			// ----------------------- Create issue in database -----------------------
 			await this.reviewSessionRepository.create({

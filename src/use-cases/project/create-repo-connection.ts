@@ -1,14 +1,14 @@
 import { UserRepository } from "../../repositories/user.repository";
 import { ProviderType, RepoConnection, User } from "@prisma/client";
-import { RepoClientService } from "@/infra/repo-provider/repo-client.service";
+import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { AccountRepository } from "@/repositories/account.repository";
 import {
 	GithubRepoDTO,
 	RepoListItem,
-} from "@/infra/repo-provider/types/github-types";
+} from "@/lib/repo-provider/types/github-types";
 import { mapGithubRepoToRepoListItem } from "@/adapters/github/repo-list-item";
 import { RepoConnectionRepository } from "@/repositories/repo-connection.repository";
-import { RepoProviderInterface } from "@/infra/repo-provider/repo-client.interface";
+import { RepoProviderInterface } from "@/lib/repo-provider/repo-client.interface";
 import {
 	InvalidCreditialError,
 	ResourceAlreadyExistsError,

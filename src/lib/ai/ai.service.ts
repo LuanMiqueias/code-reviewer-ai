@@ -17,10 +17,11 @@ export class AIService {
 		return this.provider.chatCompletion(data);
 	}
 	analyzeCodeChunk(
+		chunksToContext: { filename: string; content: string }[],
 		chunk: { filename: string; content: string },
 		settings: ProjectSettings
 	) {
-		return this.provider.analyzeCodeChunk(chunk, settings);
+		return this.provider.analyzeCodeChunk(chunksToContext, chunk, settings);
 	}
 	generateIssueEmbedding(issue: { title: string; body: string }) {
 		return this.provider.generateIssueEmbedding(issue);
