@@ -32,7 +32,7 @@ export const processFilesInChunksWithEmbeddings = async ({
 		entriesFilesToAnalyze: entriesFilesToAnalyze,
 		files,
 	});
-
+	console.log("smallChunks", smallChunks.length);
 	return {
 		bigChunks: bigChunks,
 		smallChunks: smallChunks,
@@ -86,7 +86,6 @@ const getSmallChunks = async ({
 		) {
 			continue;
 		}
-
 		const chunks = await convertFileToChunks(
 			LOCAL_REPO_PATH,
 			file.filename,

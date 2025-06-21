@@ -2,11 +2,8 @@ import { UserRepository } from "../../repositories/user.repository";
 import { ProviderType, User } from "@prisma/client";
 import { RepoClientService } from "@/lib/repo-provider/repo-client.service";
 import { AccountRepository } from "@/repositories/account.repository";
-import {
-	GithubRepoDTO,
-	RepoListItem,
-} from "@/lib/repo-provider/types/github-types";
-import { mapGithubRepoToRepoListItem } from "@/adapters/github/repo-list-item";
+import { RepoListItem } from "@/lib/repo-provider/types/common-types";
+import { mapCommonRepoToRepoListItem } from "@/adapters/common/repo-list-item";
 import { InvalidCreditialError } from "../errors/error";
 
 interface GetAllExternalRepositoriesUseCaseRequest {
@@ -49,7 +46,7 @@ export class GetAllExternalRepositoriesUseCase {
 
 		console.log(repoClientUser.data);
 		return {
-			repositories: repoClientUser.data.map(mapGithubRepoToRepoListItem),
+			repositories: repoClientUser.data.map(mapCommonRepoToRepoListItem),
 			page: repoClientUser.page,
 		};
 	}

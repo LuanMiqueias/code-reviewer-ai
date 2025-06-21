@@ -20,6 +20,7 @@ import {
 	ResourceNotFoundError,
 } from "./use-cases/errors/error";
 import { GeminiError } from "./lib/ai/providers/errors/gemini-error";
+import { BitbucketError } from "./lib/repo-provider/errors/bitbucket-error";
 
 export const app = fastify();
 
@@ -55,6 +56,7 @@ app.setErrorHandler((error, req, res) => {
 		[InvalidCreditialError, 401],
 		[ErrorProcessingFilesInChunksWithEmbeddings, 500],
 		[GithubError, 500],
+		[BitbucketError, 500],
 		[GeminiError, 500],
 	]);
 

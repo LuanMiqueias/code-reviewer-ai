@@ -1,7 +1,9 @@
-import { GithubRepoDTO } from "@/lib/repo-provider/types/github-types";
-import { RepoListItem } from "@/lib/repo-provider/types/common-types";
+import {
+	CommonRepoDTO,
+	RepoListItem,
+} from "@/lib/repo-provider/types/common-types";
 
-export function mapGithubRepoToRepoListItem(repo: GithubRepoDTO): RepoListItem {
+export function mapCommonRepoToRepoListItem(repo: CommonRepoDTO): RepoListItem {
 	return {
 		id: repo.id,
 		name: repo.name,
@@ -10,7 +12,7 @@ export function mapGithubRepoToRepoListItem(repo: GithubRepoDTO): RepoListItem {
 		url: repo.html_url,
 		language: repo.language,
 		owner: repo.owner.login,
-		nodeId: repo.nodeId || "",
+		nodeId: repo.nodeId,
 		cloneUrl: repo.clone_url,
 		defaultBranch: repo.default_branch,
 	};

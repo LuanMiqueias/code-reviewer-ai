@@ -63,7 +63,7 @@ export class AnalyzePullRequestUseCase {
 				providerUserId.toString()
 			);
 
-		if (!account) {
+		if (!account && provider !== ProviderType.BITBUCKET) {
 			throw new InvalidCreditialError(`Invalid credentials`);
 		}
 
@@ -75,9 +75,9 @@ export class AnalyzePullRequestUseCase {
 
 		const pullRequestFiles = await this.repoClientService.getPullRequest({
 			repoName,
-			providerUserName: account.providerUserName,
+			providerUserName: providerUserId,
 			prNumber,
-			token: account.accessToken,
+			token: account?.accessToken ?? "",
 		});
 
 		// ----------------------- Get issues from database -----------------------
@@ -87,13 +87,18 @@ export class AnalyzePullRequestUseCase {
 
 		await this.repoClientService.cloneRepo({
 			repoName,
-			providerUserName: account.providerUserName,
-			token: account.accessToken,
+			providerUserName: providerUserId,
+			token: account?.accessToken ?? "",
 			repoBranch: branch,
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 5000));
-
+		console.log(
+			"pullRequestFiles",
+			pullRequestFiles.filter((file) => {
+				if (file.status === "removed") return false;
+			})
+		);
+		// await new Promise((resolve) => setTimeout(resolve, 5000));
 		const {
 			bigChunks: bigChunksWithEmbedding,
 			smallChunks: smallChunksWithEmbedding,
@@ -144,12 +149,6 @@ export class AnalyzePullRequestUseCase {
 			const reviewParsed = parseIssuesFromAIResponse(review);
 			if (!reviewParsed) continue;
 
-			console.log(
-				"Waiting 10 seconds to avoid rate limit ----------------------",
-				chunk.filename
-			);
-			await new Promise((resolve) => setTimeout(resolve, 10000));
-
 			reviews.push({
 				title: reviewParsed?.title || "",
 				body: reviewParsed?.body || "",
@@ -160,11 +159,17 @@ export class AnalyzePullRequestUseCase {
 			console.log("Commenting on pull request ----------------------");
 			await this.repoClientService.commentOnPullRequest({
 				repoName,
-				providerUserName: account.providerUserName,
-				token: account.accessToken,
+				providerUserName: providerUserId,
+				token: account?.accessToken ?? "",
 				prNumber,
 				comment: `${reviewParsed.title}\n${reviewParsed.body}`,
 			});
+
+			console.log(
+				"Waiting 10 seconds to avoid rate limit ----------------------",
+				chunk.filename
+			);
+			await new Promise((resolve) => setTimeout(resolve, 10000));
 		}
 
 		await this.reviewSessionRepository.create({
@@ -178,7 +183,7 @@ export class AnalyzePullRequestUseCase {
 					return {
 						body: review?.body,
 						title: review?.title,
-						filename: review?.filename,
+						filePath: review?.filename,
 					};
 				}),
 			},
