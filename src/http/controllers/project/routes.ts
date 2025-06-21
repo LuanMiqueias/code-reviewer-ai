@@ -7,6 +7,7 @@ import { createRepoConnection } from "./create-repo-connection.controller";
 import { createRepoSettings } from "./create-repo-settings.controller";
 import { analyzeRepoController } from "./analyze-all-repo.controller";
 import { githubWebhookController } from "./handle-pull-request-github.controller";
+import { bitbucketWebhookController } from "./handle-pull-request-bitbucket.controller";
 
 export const projectRoutes = async (app: FastifyInstance) => {
 	app.get(
@@ -15,7 +16,7 @@ export const projectRoutes = async (app: FastifyInstance) => {
 		listExternalRepos
 	);
 	app.post(
-		"/projects/create/connection/:repoName",
+		"/projects/create/connection/:repoName/:workspaceSlug?",
 		{ preHandler: [verifyJWT] },
 		createRepoConnection
 	);
@@ -30,4 +31,5 @@ export const projectRoutes = async (app: FastifyInstance) => {
 		analyzeRepoController
 	);
 	app.post("/webhook/github/pull-request", githubWebhookController);
+	app.post("/webhook/bitbucket/pull-request", bitbucketWebhookController);
 };

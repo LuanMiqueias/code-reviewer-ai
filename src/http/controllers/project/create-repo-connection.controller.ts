@@ -19,9 +19,12 @@ export const createRepoConnection = async (
 ) => {
 	const CreateRepoConnectionQuerySchema = z.object({
 		repoName: z.string(),
+		workspaceSlug: z.string().optional(),
 	});
 
-	const { repoName } = CreateRepoConnectionQuerySchema.parse(req.params);
+	const { repoName, workspaceSlug } = CreateRepoConnectionQuerySchema.parse(
+		req.params
+	);
 
 	const { provider, providerUserId } = req.user.sign;
 
@@ -39,6 +42,7 @@ export const createRepoConnection = async (
 		providerUserId,
 		provider,
 		repoName,
+		workspaceSlug,
 	});
 
 	return res.status(200).send(data);

@@ -5,6 +5,11 @@ import {
 	GithubRepoDTO,
 	GithubUserDTO,
 } from "./types/github-types";
+import {
+	CommonUserDTO,
+	CommonRepoDTO,
+	CommonPullRequestFileDTO,
+} from "./types/common-types";
 import { env } from "@/env";
 import { GithubError } from "./errors/github-error";
 import { PaginatedResponse } from "@/@types/paginated-response";
@@ -48,21 +53,37 @@ export class GithubProvider implements RepoProviderInterface {
 		repoName: string;
 		providerUserName: string;
 		token: string;
-	}): Promise<GithubRepoDTO> {
+	}): Promise<CommonRepoDTO> {
 		const { data } = await this.safeRequest(() =>
 			this.axios.get<GithubRepoDTO>(`/repos/${providerUserName}/${repoName}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 		);
 
-		return data;
+		// Adaptar para o formato comum
+		return {
+			id: data.id,
+			name: data.name,
+			fullName: data.fullName || `${data.owner?.login}/${data.name}`,
+			owner: {
+				login: data.owner?.login || providerUserName,
+				avatarUrl: data.owner?.avatarUrl || "",
+			},
+			description: data.description,
+			clone_url: data.clone_url,
+			default_branch: data.default_branch,
+			private: data.private,
+			language: data.language,
+			html_url: data.html_url,
+			nodeId: data.nodeId || data.id.toString(),
+		};
 	}
 
 	async getRepos(
 		token: string,
 		page: number,
 		perPage: number
-	): Promise<PaginatedResponse<GithubRepoDTO>> {
+	): Promise<PaginatedResponse<CommonRepoDTO>> {
 		const { data } = await this.safeRequest(() =>
 			this.axios.get<GithubRepoDTO[]>("/user/repos", {
 				headers: { Authorization: `Bearer ${token}` },
@@ -73,21 +94,46 @@ export class GithubProvider implements RepoProviderInterface {
 			})
 		);
 
+		// Adaptar para o formato comum
+		const adaptedRepos = data.map((repo) => ({
+			id: repo.id,
+			name: repo.name,
+			fullName: repo.fullName || `${repo.owner?.login}/${repo.name}`,
+			owner: {
+				login: repo.owner?.login || "",
+				avatarUrl: repo.owner?.avatarUrl || "",
+			},
+			description: repo.description,
+			clone_url: repo.clone_url,
+			default_branch: repo.default_branch,
+			private: repo.private,
+			language: repo.language,
+			html_url: repo.html_url,
+			nodeId: repo.nodeId || repo.id.toString(),
+		}));
+
 		return {
-			data: data,
+			data: adaptedRepos,
 			page: page,
 			perPage: perPage,
 		};
 	}
 
-	async fetchUser(token: string): Promise<GithubUserDTO> {
+	async fetchUser(token: string): Promise<CommonUserDTO> {
 		const { data } = await this.safeRequest(() =>
 			this.axios.get<GithubUserDTO>("/user", {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 		);
-		console.log("data", data);
-		return data;
+
+		// Adaptar para o formato comum
+		return {
+			id: data.id,
+			login: data.login,
+			name: data.name,
+			avatar_url: data.avatar_url,
+			email: data.email,
+		};
 	}
 
 	async exchangeCodeForToken(code: string): Promise<{ accessToken: string }> {
@@ -157,7 +203,7 @@ export class GithubProvider implements RepoProviderInterface {
 		providerUserName: string;
 		token: string;
 		prNumber: number;
-	}): Promise<GithubPullRequestFileDTO[]> {
+	}): Promise<CommonPullRequestFileDTO[]> {
 		const { data: pullRequest } = await this.safeRequest(() =>
 			this.axios.get<GithubPullRequestFileDTO[]>(
 				`/repos/${data?.providerUserName}/${data?.repoName}/pulls/${data?.prNumber}/files`,
@@ -167,7 +213,20 @@ export class GithubProvider implements RepoProviderInterface {
 			)
 		);
 
-		return pullRequest;
+		// Adaptar para o formato comum
+		return pullRequest.map((file) => ({
+			sha: file.sha,
+			filename: file.filename,
+			status: file.status,
+			additions: file.additions,
+			deletions: file.deletions,
+			changes: file.changes,
+			blob_url: file.blob_url,
+			raw_url: file.raw_url,
+			contents_url: file.contents_url,
+			patch: file.patch,
+			previous_filename: file.previous_filename,
+		}));
 	}
 	async commentOnPullRequest(data: {
 		repoName: string;
@@ -209,5 +268,12 @@ export class GithubProvider implements RepoProviderInterface {
 		);
 
 		return comment;
+	}
+	async getPullRequestDiff(data: {
+		repoName: string;
+		providerUserName: string;
+		prNumber: number;
+	}): Promise<string> {
+		return "";
 	}
 }

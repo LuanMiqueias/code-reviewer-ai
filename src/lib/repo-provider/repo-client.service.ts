@@ -1,12 +1,22 @@
 import { ProviderType } from "@prisma/client";
 import { GithubProvider } from "./github.client";
+import { BitbucketProvider } from "./bitbucket.client";
 import { RepoProviderInterface } from "./repo-client.interface";
 
 export class RepoClientService implements RepoProviderInterface {
 	private provider: RepoProviderInterface;
 
 	constructor(provider: ProviderType) {
-		this.provider = new GithubProvider();
+		switch (provider) {
+			case "GITHUB":
+				this.provider = new GithubProvider();
+				break;
+			case "BITBUCKET":
+				this.provider = new BitbucketProvider();
+				break;
+			default:
+				throw new Error(`Unsupported provider: ${provider}`);
+		}
 	}
 
 	async getRepos(token: string, page: number = 1, perPage: number = 30) {
@@ -64,5 +74,12 @@ export class RepoClientService implements RepoProviderInterface {
 		body: string;
 	}) {
 		return this.provider.commentOnIssue(data);
+	}
+	async getPullRequestDiff(data: {
+		repoName: string;
+		providerUserName: string;
+		prNumber: number;
+	}) {
+		return this.provider.getPullRequestDiff(data);
 	}
 }

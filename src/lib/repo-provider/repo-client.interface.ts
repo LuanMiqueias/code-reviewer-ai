@@ -1,24 +1,23 @@
-import { User } from "@prisma/client";
-import {
-	GithubPullRequestFileDTO,
-	GithubRepoDTO,
-	GithubUserDTO,
-} from "./types/github-types";
 import { PaginatedResponse } from "@/@types/paginated-response";
+import {
+	CommonUserDTO,
+	CommonRepoDTO,
+	CommonPullRequestFileDTO,
+} from "./types/common-types";
 
 export interface RepoProviderInterface {
 	getRepos(
 		token: string,
 		page: number,
 		perPage: number
-	): Promise<PaginatedResponse<any>>;
-	fetchUser(token: string): Promise<GithubUserDTO>;
+	): Promise<PaginatedResponse<CommonRepoDTO>>;
+	fetchUser(token: string): Promise<CommonUserDTO>;
 	exchangeCodeForToken(code: string): Promise<{ accessToken: string }>;
 	findRepoByName(data: {
 		repoName: string;
 		providerUserName: string;
 		token: string;
-	}): Promise<GithubRepoDTO>;
+	}): Promise<CommonRepoDTO>;
 	cloneRepo(data: {
 		repoName: string;
 		providerUserName: string;
@@ -30,7 +29,7 @@ export interface RepoProviderInterface {
 		providerUserName: string;
 		token: string;
 		prNumber: number;
-	}): Promise<GithubPullRequestFileDTO[]>;
+	}): Promise<CommonPullRequestFileDTO[]>;
 	commentOnPullRequest(data: {
 		repoName: string;
 		providerUserName: string;
@@ -45,4 +44,9 @@ export interface RepoProviderInterface {
 		title: string;
 		body: string;
 	}): Promise<void>;
+	getPullRequestDiff(data: {
+		repoName: string;
+		providerUserName: string;
+		prNumber: number;
+	}): Promise<string>;
 }

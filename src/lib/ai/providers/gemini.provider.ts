@@ -72,7 +72,7 @@ export class GeminiProvider implements AIProvider {
 		const prompt = `
 Você é um revisor de código sênior especialista em boas práticas, segurança, performance e arquitetura.
 
-Analise o trecho de código do arquivo "${
+Analise o trecho de código do arquivo, revise somente o trecho de código:"${
 			chunk.filename
 		}" com base nas configurações abaixo do projeto:
 
@@ -89,19 +89,19 @@ Crie um comentário para o pull request com as seguintes propriedades e retorne 
 
   {
     "title": "Título curto e claro da issue e inclua o o path do arquivo",
-    "body": "Descrição breve da issue, incluindo impacto, sugestão de correção. com no maximo 1500 caracteres em markdown"
+    "body": "Em markdown, descrição breve da issue, incluindo impacto, sugestão de correção. com no maximo 1500 caracteres"
   }
 
 Se não houver issues, retorne um objeto vazio: {}
 
 Crie as issues em português brasileiro.
 
-Código a ser analisado:
+Revise somente o trecho de código:
 \`\`\`
 ${chunk.content}
 \`\`\`
 
-Contexto sobre o projeto:
+Contexto sobre o projeto (não revise o contexto):
 \`\`\`
 ${chunksToContext
 	.map((chunk) => `${chunk.filename}\n${chunk.content}`)
